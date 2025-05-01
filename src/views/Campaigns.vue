@@ -41,7 +41,7 @@
             <button type="button" class="btn-close" @click="showModal = false"></button>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="submitCampaign">
+            <form @submit.prevent="createCampaign">
               <div class="mb-3">
                 <label class="form-label">Campaign Name</label>
                 <input v-model="newCampaign.name" type="text" class="form-control" required />
@@ -73,51 +73,48 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { generateClient } from 'aws-amplify/data'
-import type { Schema } from '@/amplify/data/resource'
+import { ref, onMounted } from 'vue';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../amplify/data/resource';
 
-const client = generateClient<Schema>()
+const client = generateClient<Schema>();
 
-const campaigns = ref<Schema['Campaign']['type'][]>([])
+// create a reactive reference to the array of todos
+const campaigns = ref<Array<Schema['Campaign']['type']>>([]);
+
 const loading = ref(true)
 const showModal = ref(false)
 
-const newCampaign = ref({
+type GameSystem = 'FORGOTTEN_RUIN' | 'FIVE_LEAGUES' | 'FIVE_PARSECS'
+
+const newCampaign = ref<{
+  name: string
+  system: GameSystem | ''
+}>({
   name: '',
-  system: '',
+  system: 'FORGOTTEN_RUIN',
 })
 
-async function loadCampaigns() {
-  loading.value = true
-  try {
-    const result = await client.models.Campaign.list()
-    campaigns.value = result.data
-  } catch (err) {
-    console.error('Failed to load campaigns', err)
-  } finally {
-    loading.value = false
-  }
+async function createCampaign() {
+  if (!newCampaign.value.name || !newCampaign.value.system) return;
+
+  await client.models.Campaign.create({
+    name: newCampaign.value.name,
+    system: newCampaign.value.system,
+  });
+
+  newCampaign.value.name = '';
+  newCampaign.value.system = '';
+  showModal.value = false;
 }
 
-async function submitCampaign() {
-  if (!newCampaign.value.name || !newCampaign.value.system) return
-  try {
-    const result = await client.models.Campaign.create({
-      name: newCampaign.value.name,
-      system: newCampaign.value.system,
-    })
-    campaigns.value.push(result.data)
-    newCampaign.value.name = ''
-    newCampaign.value.system = ''
-    showModal.value = false
-  } catch (err) {
-    console.error('Failed to create campaign', err)
-  }
+async function fetchCampaigns() {
+  const { data: items, errors } = await client.models.Campaign.list();
+  campaigns.value = items; 
 }
 
 onMounted(() => {
-  loadCampaigns()
+  fetchCampaigns()
 })
 </script>
 

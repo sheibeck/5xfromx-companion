@@ -11,8 +11,8 @@ const schema =  a.schema({
     .model({
       id: a.id().required(),
       name: a.string().required(),
-      system: a.enum(['Forgotten Ruin', '5 Leagues', '5 Parsecs']),
-      characterGroups: a.hasMany('CharacterGroup', 'campaignId'),
+      system: a.enum(['FORGOTTEN_RUIN', 'FIVE_LEAGUES', 'FIVE_PARSECS']),
+      characterGroups: a.hasMany('CharacterGroup', 'id'),
     })
     .authorization((allow) => [allow.publicApiKey()]),
 
@@ -22,7 +22,7 @@ const schema =  a.schema({
       name: a.string().required(),
       typeLabel: a.string(),
       campaignId: a.belongsTo('Campaign', 'id'),
-      characters: a.hasMany('Character', 'groupId'),
+      characters: a.hasMany('Character', 'id'),
     })
     .authorization((allow) => [allow.publicApiKey()]),
 
