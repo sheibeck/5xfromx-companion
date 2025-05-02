@@ -2,12 +2,15 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthenticator } from '@aws-amplify/ui-vue'
 
-import Campaigns from '../views/Campaigns.vue'
-import SignIn from '../views/Signin.vue'
+import Home from '../views/Home.vue';
+import Campaigns from '../views/Campaigns.vue';
+import SignIn from '../views/Signin.vue';
+
 
 const routes = [
   { path: '/signin', component: SignIn },
-  { path: '/', component: Campaigns, meta: { requiresAuth: true } }
+  { path: '/campaigns', component: Campaigns, meta: { requiresAuth: true } },
+  { path: '/', component: Home }
 ]
 
 const router = createRouter({

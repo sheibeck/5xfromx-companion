@@ -9,21 +9,19 @@
           <span class="text-muted small">Companion</span>
         </div>
       </router-link>
+      <router-link v-if="auth.route === 'authenticated'" to="/campaigns" class="navbar-brand d-flex align-items-center gap-2 mx-5">
+        Campaigns
+      </router-link>
       <div class="ms-auto">
-        <button
-          v-if="authStatus === 'authenticated'"
-          class="btn btn-outline-light"
-          @click="signOut"
-        >
-          Sign Out
-        </button>
-        <router-link
-          v-else
-          to="/signin"
-          class="btn btn-outline-light"
-        >
-          Sign In
-        </router-link>
+        <authenticator style="display:none;" :social-providers="['google']"></authenticator>
+        <template v-if="auth.route === 'authenticated'">
+          <button @click="auth.signOut">Sign out</button>
+        </template>
+        <template v-if="auth.route !== 'authenticated'">
+          <router-link to="/signin" class="navbar-brand d-flex align-items-center gap-2">
+            Sign-In
+          </router-link>
+        </template>
       </div>
     </nav>
 
@@ -37,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthenticator } from '@aws-amplify/ui-vue'
-const { authStatus, signOut } = useAuthenticator()
+import { Authenticator, useAuthenticator } from '@aws-amplify/ui-vue';
+const auth = useAuthenticator();
 </script>
 
 <style scoped lang="scss">

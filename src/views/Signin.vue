@@ -7,4 +7,5 @@
     </authenticator>
 </template>
 <script setup lang="ts">
+import { Authenticator } from "@aws-amplify/ui-vue";
 </script>
