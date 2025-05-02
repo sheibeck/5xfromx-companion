@@ -24,8 +24,8 @@ const characterTemplates = {
 - **Combat:**
 - **Tough:**
 - **Luck:**
--  **Will:**
--  **Casting:**
+- **Will:**
+- **Casting:**
 
 ---
 
