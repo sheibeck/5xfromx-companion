@@ -27,19 +27,19 @@
       <!-- Nav Content -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <!-- Left Nav -->
-        <ul class="navbar-nav">
-          <li class="nav-item" v-if="user">
+        <ul class="navbar-nav" v-if="user">
+          <li class="nav-item">
             <router-link to="/campaigns" class="nav-link">Campaigns</router-link>
-          </li>
-          <li class="nav-item" v-else>
-            <router-link to="/signin" class="nav-link">Sign-In</router-link>
           </li>
         </ul>
 
-        <!-- Right Nav (Sign Out Button) -->
+        <!-- Right Nav (Sign-In or Sign-Out Button) -->
         <ul class="navbar-nav ms-auto">
           <li class="nav-item" v-if="user">
             <button @click="doSignOut()" class="btn btn-outline-light">Sign out</button>
+          </li>
+          <li class="nav-item" v-else>
+            <router-link to="/signin" class="nav-link">Sign-In</router-link>
           </li>
         </ul>
       </div>
@@ -61,8 +61,13 @@ import { onMounted, ref } from 'vue';
 const user = ref();
 
 async function getUserAuth() {
-  const { userId } = await getCurrentUser();
-  user.value = userId;
+  try {
+    const { userId } = await getCurrentUser();
+    user.value = userId;
+  }
+  catch {
+    user.value = null;
+  }
 }
 
 async function doSignOut() {
