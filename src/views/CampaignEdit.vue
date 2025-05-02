@@ -1,145 +1,139 @@
 <template>
   <div class="container my-5">
-    <h1 class="mb-4 d-flex justify-content-between align-items-center">
-      {{ campaign?.name }}
-      <button class="btn btn-danger" @click="confirmDeleteCampaign">Delete Campaign</button>
-    </h1>
+    <div class="d-print-none">
+      <h1 class="mb-0 d-flex flex-wrap justify-content-between align-items-center">
+        {{ campaign?.name }}
+        <button class="btn btn-danger mt-2 mt-sm-0 btn-sm" @click="confirmDeleteCampaign">Delete Campaign</button>
+      </h1>
+      <small class="text-secondary">
+        {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }}
+      </small>
 
-    <div v-if="loading">Loading...</div>
+      <div v-if="loading">Loading...</div>
 
-    <div v-else>
-      <!-- Toggle Add Group Form -->
-      <div class="mb-3">
-        <button class="btn btn-outline-success" @click="showGroupForm = !showGroupForm">
-          {{ showGroupForm ? 'Cancel' : 'Add New Group' }}
-        </button>
+      <div class="my-2" v-else>
+        <div class="mb-3">
+          <button class="btn btn-outline-success" @click="showGroupForm = !showGroupForm">
+            {{ showGroupForm ? 'Cancel' : 'Add New Group' }}
+          </button>
+        </div>
+
+        <form v-if="showGroupForm" @submit.prevent="createGroup" class="mb-3 row g-3">
+          <div class="col-md-5">
+            <input v-model="newGroup.name" class="form-control" :placeholder="groupNameLabel" required />
+          </div>
+          <div class="col-md-5">
+            <textarea
+              v-model="newGroup.description"
+              class="form-control"
+              placeholder="Group description (Markdown supported)"
+              rows="5"
+            ></textarea>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Add Group</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div v-for="group in characterGroups" :key="group.id" class="card mb-4">
+      <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
+        <strong>{{ group.name }}</strong>
+        <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0 d-print-none">
+          <button class="btn btn-sm btn-outline-primary" @click="toggleGroupCollapse(group.id)">
+            {{ collapsedGroups[group.id] ? 'Expand' : 'Collapse' }}
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" @click="startEditingGroup(group)">Edit</button>
+          <button class="btn btn-sm btn-outline-secondary" @click="printGroup(group.id)">Print</button>
+          <button class="btn btn-sm btn-danger" @click="confirmDeleteGroup(group.id)">Delete</button>
+        </div>
       </div>
 
-      <!-- Create Character Group -->
-      <form v-if="showGroupForm" @submit.prevent="createGroup" class="mb-3 row g-3">
-        <div class="col-md-5">
-          <input v-model="newGroup.name" class="form-control" placeholder="Group name" required />
+      <div class="card-body px-2 px-sm-4" v-if="!collapsedGroups[group.id]" :id="`print-${group.id}`">
+        <div v-if="editingGroupId === group.id" class="d-print-none">
+          <form @submit.prevent="updateGroup(group.id)" class="row g-3">
+            <div class="col-md-5">
+              <input v-model="editGroup.name" class="form-control" required />
+            </div>
+            <div class="col-md-5">
+              <textarea v-model="editGroup.description" class="form-control" rows="5"></textarea>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" class="btn btn-secondary" @click="cancelEditingGroup">Cancel</button>
+            </div>
+          </form>
         </div>
-        <div class="col-md-5">
-          <textarea
-            v-model="newGroup.description"
-            class="form-control"
-            placeholder="Group description (Markdown supported)"
-            rows="5"
-          ></textarea>
-        </div>
-        <div class="col-md-2">
-          <button type="submit" class="btn btn-success w-100">Add Group</button>
-        </div>
-      </form>
-
-      <!-- Groups + Nested Characters -->
-      <div v-for="group in characterGroups" :key="group.id" class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <div>
-            <strong>{{ group.name }}</strong>
-          </div>
-          <div class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-primary" @click="toggleGroupCollapse(group.id)">
-              {{ collapsedGroups[group.id] ? 'Expand' : 'Collapse' }}
-            </button>
-            <button class="btn btn-sm btn-outline-secondary" @click="startEditingGroup(group)">Edit</button>
-            <button class="btn btn-sm btn-danger" @click="confirmDeleteGroup(group.id)">Delete</button>
-          </div>
+        <div v-else>
+          <div v-html="renderMarkdown(group.description || '')" class="mb-3"></div>
         </div>
 
-        <div class="card-body" v-if="!collapsedGroups[group.id]">
-          <div v-if="editingGroupId === group.id">
-            <form @submit.prevent="updateGroup(group.id)" class="row g-3">
-              <div class="col-md-5">
-                <input v-model="editGroup.name" class="form-control" required />
-              </div>
-              <div class="col-md-5">
-                <textarea v-model="editGroup.description" class="form-control" rows="5"></textarea>
-              </div>
-              <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Save</button>
-                <button type="button" class="btn btn-secondary" @click="cancelEditingGroup">Cancel</button>
-              </div>
-            </form>
-          </div>
-          <div v-else>
-            <div v-html="renderMarkdown(group.description || '')" class="mb-3"></div>
-          </div>
-
-          <ul class="list-group mb-3">
-            <li
-              v-for="char in groupCharacters[group.id] || []"
-              :key="char.id"
-              class="list-group-item text-light bg-dark"
-            >
-              <div v-if="editingCharacterId === char.id" class="row g-2">
-                <div class="col-md-5">
-                  <input v-model="editCharacter.name" class="form-control" required />
-                </div>
-                <div class="col-md-5">
-                  <textarea v-model="editCharacter.description" class="form-control" rows="4"></textarea>
-                </div>
-                <div class="col-md-2 d-flex gap-2">
+        <div class="row">
+          <div
+            v-for="char in groupCharacters[group.id] || []"
+            :key="char.id"
+            class="col-12 col-md-6 mb-3"
+          >
+            <div class="p-2 p-sm-3 border bg-dark text-light">
+              <div v-if="editingCharacterId === char.id" class="d-print-none">
+                <input v-model="editCharacter.name" class="form-control mb-2" required />
+                <textarea v-model="editCharacter.description" class="form-control" rows="4"></textarea>
+                <div class="d-flex flex-wrap gap-2 mt-2">
                   <button class="btn btn-sm btn-primary" @click="updateCharacter(group.id, char.id)">Save</button>
                   <button class="btn btn-sm btn-secondary" @click="cancelEditingCharacter">Cancel</button>
                 </div>
               </div>
-              <div v-else class="d-flex justify-content-between align-items-center">
-                <div>
-                  <strong>{{ char.name }}</strong>
-                  <div v-html="renderMarkdown(char.description || '')"></div>
-                </div>
-                <div class="d-flex gap-2">
+              <div v-else>
+                <strong>{{ char.name }}</strong>
+                <div v-html="renderMarkdown(char.description || '')"></div>
+                <div class="d-flex flex-wrap gap-2 mt-2 d-print-none">
                   <button class="btn btn-sm btn-outline-secondary" @click="startEditingCharacter(char)">Edit</button>
                   <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteCharacter(group.id, char.id)">Delete</button>
                 </div>
               </div>
-            </li>
-          </ul>
-
-          <!-- Toggle Character Form -->
-          <div class="mb-2">
-            <button class="btn btn-outline-primary btn-sm" @click="toggleCharacterForm(group.id)">
-              {{ showCharacterForm[group.id] ? 'Cancel' : 'Add Character' }}
-            </button>
+            </div>
           </div>
-
-          <!-- Add Character -->
-          <form v-if="showCharacterForm[group.id]" @submit.prevent="createCharacter(group.id)" class="row g-3">
-            <div class="col-md-5">
-              <input v-model="newCharacter[group.id].name" class="form-control" placeholder="Character name" required />
-            </div>
-            <div class="col-md-5">
-              <textarea
-                v-model="newCharacter[group.id].description"
-                class="form-control"
-                placeholder="Character description (Markdown supported)"
-                rows="4"
-              ></textarea>
-            </div>
-            <div class="col-md-2">
-              <button type="submit" class="btn btn-primary w-100">Add</button>
-            </div>
-          </form>
         </div>
-      </div>
 
-      <!-- Confirmation Modal -->
-      <div class="modal fade show" style="display: block; z-index: 1055" v-if="modal.visible">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Confirm Deletion</h5>
-              <button type="button" class="btn-close" @click="modal.visible = false"></button>
-            </div>
-            <div class="modal-body">
-              <p>Are you sure you want to delete this {{ modal.type }}?</p>
-            </div>
-            <div class="modal-footer">
-              <button class="btn btn-secondary" @click="modal.visible = false">Cancel</button>
-              <button class="btn btn-danger" @click="deleteConfirmed">Delete</button>
-            </div>
+        <div class="mb-2 d-print-none">
+          <button class="btn btn-outline-primary btn-sm" @click="toggleCharacterForm(group.id)">
+            {{ showCharacterForm[group.id] ? 'Cancel' : 'Add Character' }}
+          </button>
+        </div>
+
+        <form v-if="showCharacterForm[group.id]" @submit.prevent="createCharacter(group.id)" class="row g-3 d-print-none">
+          <div class="col-md-5">
+            <input v-model="newCharacter[group.id].name" class="form-control" placeholder="Character name" required />
+          </div>
+          <div class="col-md-5">
+            <textarea
+              v-model="newCharacter[group.id].description"
+              class="form-control"
+              placeholder="Character description (Markdown supported)"
+              rows="4"
+            ></textarea>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Add</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade show" style="display: block; z-index: 1055" v-if="modal.visible">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Confirm Deletion</h5>
+            <button type="button" class="btn-close" @click="modal.visible = false"></button>
+          </div>
+          <div class="modal-body">
+            <p>Are you sure you want to delete this {{ modal.type }}?</p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="modal.visible = false">Cancel</button>
+            <button class="btn btn-danger" @click="deleteConfirmed">Delete</button>
           </div>
         </div>
       </div>
@@ -148,13 +142,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { generateClient } from 'aws-amplify/data'
 import type { Schema } from '../../amplify/data/resource'
 import { marked } from 'marked'
 import templates from '../templates/groupTemplates'
 import characterTemplates from '../templates/characterTemplates'
+import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSystemDisplayName'
 
 const route = useRoute()
 const router = useRouter()
@@ -162,6 +157,8 @@ const client = generateClient<Schema>()
 
 const campaign = ref<Schema['Campaign']['type'] | null>(null)
 const loading = ref(true)
+
+const groupNameLabel = ref("Group Name");
 
 const characterGroups = ref<Schema['CharacterGroup']['type'][]>([])
 const groupCharacters = ref<Record<string, Schema['Character']['type'][]>>({})
@@ -307,9 +304,32 @@ function toggleGroupCollapse(groupId: string) {
   collapsedGroups.value[groupId] = !collapsedGroups.value[groupId]
 }
 
+function printGroup(groupId: string) {
+  const el = document.getElementById(`print-${groupId}`)
+  if (!el) return
+  const printContent = el.innerHTML
+  const printWindow = window.open('', '', 'height=600,width=800')
+  if (printWindow) {
+    printWindow.document.write('<html><head><title>Print Character Group</title>')
+    printWindow.document.write('<link rel="stylesheet" href="/style.css">')
+    printWindow.document.write('</head><body>')
+    printWindow.document.write(printContent)
+    printWindow.document.write('</body></html>')
+    printWindow.document.close()
+    printWindow.focus()
+    printWindow.print()
+    printWindow.close()
+  }
+}
+
 onMounted(async () => {
   await loadCampaign()
   await loadGroupsWithCharacters()
   loading.value = false
+
+  groupNameLabel.value = campaign?.value ? `${groupSystemDisplayName[campaign.value.system as keyof typeof groupSystemDisplayName]} Name` : "Group Name";
 })
 </script>
+
+<style scoped>
+</style>

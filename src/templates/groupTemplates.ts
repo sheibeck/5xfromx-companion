@@ -1,6 +1,5 @@
 const templates: Record<string, string> = {
-    FIVE_LEAGUES: `**Warband Name:**  
-**Region:**  
+    FIVE_LEAGUES: `**Region:**  
 **Current Location:**  
 **Gold Marks:**  
 **Story Points:**  
@@ -8,16 +7,14 @@ const templates: Record<string, string> = {
 **Backpack:**
   `,
   
-    FORGOTTEN_RUIN: `**Squad Name:**  
-**Era:**  
+    FORGOTTEN_RUIN: `**Era:**  
 **Mission Objective:**  
 **Intel Collected:**  
 **Artifacts Recovered:**  
 **Supply Cache:**  
   `,
   
-    FIVE_PARSECS: `**Crew Name:**  
-**Ship Name:**
+    FIVE_PARSECS: `**Ship Name:**
 **Ship Details:** 
 **Credits:**  
 **Notoriety:**  

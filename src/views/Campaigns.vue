@@ -23,7 +23,7 @@
           <div class="card-body">
             <h5 class="card-title">{{ campaign.name }}</h5>
             <p class="card-text">
-              System: {{ campaign.system }}
+              {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }}
             </p>
           </div>
         </router-link>
@@ -79,6 +79,7 @@
 import { ref, onMounted } from 'vue';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
+import { gameSystemDisplayName } from '../enums/gameSystemDisplayName'
 
 const client = generateClient<Schema>();
 
@@ -87,7 +88,6 @@ const campaigns = ref<Array<Schema['Campaign']['type']>>([]);
 
 const loading = ref(true)
 const showModal = ref(false)
-
 
 //Get client enum
 const gameSystems = client.enums.CampaignSystem.values()
