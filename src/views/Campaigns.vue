@@ -50,9 +50,9 @@
                 <label class="form-label">System</label>
                 <select v-model="newCampaign.system" class="form-select" required>
                   <option disabled value="">Select a system</option>
-                  <option>Forgotten Ruin</option>
-                  <option>5 Leagues</option>
-                  <option>5 Parsecs</option>
+                  <option value=0>Forgotten Ruin</option>
+                  <option value=1>5 Leagues</option>
+                  <option value=2>5 Parsecs</option>
                 </select>
               </div>
               <div class="modal-footer">
@@ -85,32 +85,48 @@ const campaigns = ref<Array<Schema['Campaign']['type']>>([]);
 const loading = ref(true)
 const showModal = ref(false)
 
-type GameSystem = 'FORGOTTEN_RUIN' | 'FIVE_LEAGUES' | 'FIVE_PARSECS'
 
+//Get client enum
+const gameSystems = client.enums.CampaignSystem.values()
+
+// 4. Use it in your form
 const newCampaign = ref<{
   name: string
-  system: GameSystem | ''
+  system: number
 }>({
   name: '',
-  system: 'FORGOTTEN_RUIN',
+  system: 0
 })
 
 async function createCampaign() {
-  if (!newCampaign.value.name || !newCampaign.value.system) return;
-
-  await client.models.Campaign.create({
+  const campaign = {
     name: newCampaign.value.name,
-    system: newCampaign.value.system,
-  });
+    system: gameSystems[newCampaign.value.system],
+  }
+
+  const { errors } = await client.models.Campaign.create(campaign)
+
+  if (errors) {
+    console.error(errors)
+    return
+  }
 
   newCampaign.value.name = '';
-  newCampaign.value.system = '';
+  newCampaign.value.system = 0;
   showModal.value = false;
+
+  fetchCampaigns();
 }
 
+
 async function fetchCampaigns() {
-  const { data: items } = await client.models.Campaign.list();
+  const { data: items, errors } = await client.models.Campaign.list();
+  if (errors) {
+    console.log("Errors:", errors);
+  }
   campaigns.value = items; 
+
+  loading.value = false;
 }
 
 onMounted(() => {

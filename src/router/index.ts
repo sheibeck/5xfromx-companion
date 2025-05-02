@@ -1,6 +1,5 @@
 // router/index.ts
 import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthenticator } from '@aws-amplify/ui-vue'
 
 import Home from '../views/Home.vue';
 import Campaigns from '../views/Campaigns.vue';
@@ -16,16 +15,6 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes
-})
-
-router.beforeEach(async (to, _from, next) => {
-  const { authStatus } = useAuthenticator()
-
-  if (to.meta.requiresAuth && authStatus !== 'authenticated') {
-    next('/signin')
-  } else {
-    next()
-  }
 })
 
 export default router

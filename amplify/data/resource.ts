@@ -13,11 +13,8 @@ const schema =  a.schema({
       name: a.string().required(),
       system: a.enum(['FORGOTTEN_RUIN', 'FIVE_LEAGUES', 'FIVE_PARSECS']),
       characterGroups: a.hasMany('CharacterGroup', 'campaignId'),
-    })
-    .authorization((allow) => [
-      allow.owner()
-    ]),
-    
+    }),
+  
   CharacterGroup: a
     .model({
       name: a.string().required(),
@@ -25,11 +22,8 @@ const schema =  a.schema({
       characters: a.hasMany('Character', 'characterGroupId'),
       campaignId: a.id(),
       campaign: a.belongsTo('Campaign', 'campaignId'),
-    })
-    .authorization((allow) => [
-      allow.owner()
-    ]),
-
+    }),
+   
   Character: a
     .model({
       name: a.string().required(),
@@ -37,12 +31,9 @@ const schema =  a.schema({
       characterGroupId: a.id(),
       characterGroup: a.belongsTo('CharacterGroup', 'characterGroupId'),
     })
-    .authorization((allow) => [
-      allow.owner()
-    ])
 })
 .authorization(allow => [
-  allow.guest().to(['read'])
+  allow.owner(),
 ]);
 
 export type Schema = ClientSchema<typeof schema>;
@@ -50,6 +41,6 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'identityPool',
+    defaultAuthorizationMode: 'userPool',
   },
 });
