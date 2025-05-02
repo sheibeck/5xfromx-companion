@@ -39,7 +39,7 @@
         <!-- Right Nav (Sign Out Button) -->
         <ul class="navbar-nav ms-auto">
           <li class="nav-item" v-if="user">
-            <button @click="doSignOut" class="btn btn-outline-light">Sign out</button>
+            <button @click="doSignOut()" class="btn btn-outline-light">Sign out</button>
           </li>
         </ul>
       </div>
