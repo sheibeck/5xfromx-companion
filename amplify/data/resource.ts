@@ -12,9 +12,10 @@ const schema =  a.schema({
       id: a.id().required(),
       name: a.string().required(),
       system: a.enum(['FORGOTTEN_RUIN', 'FIVE_LEAGUES', 'FIVE_PARSECS']),
+      owner: a.string().authorization((allow) => [allow.owner()]),
       characterGroups: a.hasMany('CharacterGroup', 'id'),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.authenticated()]),
 
   CharacterGroup: a
     .model({
@@ -22,9 +23,10 @@ const schema =  a.schema({
       name: a.string().required(),
       typeLabel: a.string(),
       campaignId: a.belongsTo('Campaign', 'id'),
+      owner: a.string().authorization((allow) => [allow.owner()]),
       characters: a.hasMany('Character', 'id'),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.authenticated()]),
 
   Character: a
     .model({
@@ -32,8 +34,9 @@ const schema =  a.schema({
       name: a.string().required(),
       role: a.string(),
       groupId: a.belongsTo('CharacterGroup', 'id'),
+      owner: a.string().authorization((allow) => [allow.owner()]),
     })
-    .authorization((allow) => [allow.publicApiKey()]),
+    .authorization((allow) => [allow.authenticated()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -41,10 +44,10 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'apiKey',
-    apiKeyAuthorizationMode: { expiresInDays: 30 }
-  }
+    defaultAuthorizationMode: 'identityPool',
+  },
 });
+
 
 /*== STEP 2 ===============================================================
 Go to your frontend source code. From your client-side code, generate a
