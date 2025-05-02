@@ -1,4 +1,5 @@
 import { type ClientSchema, a, defineData } from '@aws-amplify/backend';
+import { defineAuth, secret } from '@aws-amplify/backend';
 
 /*== STEP 1 ===============================================================
 The section below creates a Todo database table with a "content" field. Try
@@ -54,32 +55,37 @@ export const data = defineData({
   },
 });
 
-
-/*== STEP 2 ===============================================================
-Go to your frontend source code. From your client-side code, generate a
-Data client to make CRUDL requests to your table. (THIS SNIPPET WILL ONLY
-WORK IN THE FRONTEND CODE FILE.)
-
-Using JavaScript or Next.js React Server Components, Middleware, Server 
-Actions or Pages Router? Review how to generate Data clients for those use
-cases: https://docs.amplify.aws/gen2/build-a-backend/data/connect-to-API/
-=========================================================================*/
-
-/*
-"use client"
-import { generateClient } from "aws-amplify/data";
-import type { Schema } from "@/amplify/data/resource";
-
-const client = generateClient<Schema>() // use this Data client for CRUDL requests
-*/
-
-/*== STEP 3 ===============================================================
-Fetch records from the database and use them in your frontend component.
-(THIS SNIPPET WILL ONLY WORK IN THE FRONTEND CODE FILE.)
-=========================================================================*/
-
-/* For example, in a React component, you can use this snippet in your
-  function's RETURN statement */
-// const { data: todos } = await client.models.Todo.list()
-
-// return <ul>{todos.map(todo => <li key={todo.id}>{todo.content}</li>)}</ul>
+export const auth = defineAuth({
+  loginWith: {
+    email: true,
+    externalProviders: {
+      google: {
+        clientId: secret('GOOGLE_CLIENT_ID'),
+        clientSecret: secret('GOOGLE_CLIENT_SECRET'),
+        attributeMapping: {
+          email: 'email'
+        },
+        scopes: ['profile']
+      },
+      // signInWithApple: {
+      //   clientId: secret('SIWA_CLIENT_ID'),
+      //   keyId: secret('SIWA_KEY_ID'),
+      //   privateKey: secret('SIWA_PRIVATE_KEY'),
+      //   teamId: secret('SIWA_TEAM_ID')
+      // },
+      // loginWithAmazon: {
+      //   clientId: secret('LOGINWITHAMAZON_CLIENT_ID'),
+      //   clientSecret: secret('LOGINWITHAMAZON_CLIENT_SECRET')
+      // },
+      // facebook: {
+      //   clientId: secret('FACEBOOK_CLIENT_ID'),
+      //   clientSecret: secret('FACEBOOK_CLIENT_SECRET')
+      // },
+      callbackUrls: [
+        'http://localhost:5174/signin',
+        'https://main.d2e92q6lz39lb.amplifyapp.com/signin'
+      ],
+      logoutUrls: ['http://localhost:5174/', 'https://main.d2e92q6lz39lb.amplifyapp.com/'],
+    }
+  }
+});

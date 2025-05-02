@@ -9,6 +9,22 @@
           <span class="text-muted small">Companion</span>
         </div>
       </router-link>
+      <div class="ms-auto">
+        <button
+          v-if="authStatus === 'authenticated'"
+          class="btn btn-outline-light"
+          @click="signOut"
+        >
+          Sign Out
+        </button>
+        <router-link
+          v-else
+          to="/signin"
+          class="btn btn-outline-light"
+        >
+          Sign In
+        </router-link>
+      </div>
     </nav>
 
     <!-- Full-screen Content Area -->
@@ -21,6 +37,8 @@
 </template>
 
 <script setup lang="ts">
+import { useAuthenticator } from '@aws-amplify/ui-vue'
+const { authStatus, signOut } = useAuthenticator()
 </script>
 
 <style scoped lang="scss">
