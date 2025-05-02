@@ -9,35 +9,41 @@ and "delete" any "Todo" records.
 const schema =  a.schema({
   Campaign: a
     .model({
-      id: a.id().required(),
+      //id: a.id().required(),
       name: a.string().required(),
       system: a.enum(['FORGOTTEN_RUIN', 'FIVE_LEAGUES', 'FIVE_PARSECS']),
-      owner: a.string().authorization((allow) => [allow.owner()]),
-      characterGroups: a.hasMany('CharacterGroup', 'id'),
+      characterGroups: a.hasMany('CharacterGroup', 'campaignId'),
     })
-    .authorization((allow) => [allow.authenticated()]),
-
+    .authorization((allow) => [
+      allow.owner()
+    ]),
+    
   CharacterGroup: a
     .model({
-      id: a.id().required(),
       name: a.string().required(),
-      typeLabel: a.string(),
-      campaignId: a.belongsTo('Campaign', 'id'),
-      owner: a.string().authorization((allow) => [allow.owner()]),
-      characters: a.hasMany('Character', 'id'),
+      description: a.string(),
+      characters: a.hasMany('Character', 'characterGroupId'),
+      campaignId: a.id(),
+      campaign: a.belongsTo('Campaign', 'campaignId'),
     })
-    .authorization((allow) => [allow.authenticated()]),
+    .authorization((allow) => [
+      allow.owner()
+    ]),
 
   Character: a
     .model({
-      id: a.id().required(),
       name: a.string().required(),
-      role: a.string(),
-      groupId: a.belongsTo('CharacterGroup', 'id'),
-      owner: a.string().authorization((allow) => [allow.owner()]),
+      description: a.string(),
+      characterGroupId: a.id(),
+      characterGroup: a.belongsTo('CharacterGroup', 'characterGroupId'),
     })
-    .authorization((allow) => [allow.authenticated()]),
-});
+    .authorization((allow) => [
+      allow.owner()
+    ])
+})
+.authorization(allow => [
+  allow.guest().to(['read'])
+]);
 
 export type Schema = ClientSchema<typeof schema>;
 
