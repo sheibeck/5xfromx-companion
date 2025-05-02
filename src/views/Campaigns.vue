@@ -109,7 +109,7 @@ async function createCampaign() {
 }
 
 async function fetchCampaigns() {
-  const { data: items, errors } = await client.models.Campaign.list();
+  const { data: items } = await client.models.Campaign.list();
   campaigns.value = items; 
 }
 
