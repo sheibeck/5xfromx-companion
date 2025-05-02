@@ -16,14 +16,17 @@
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" v-else>
       <div class="col" v-for="campaign in campaigns" :key="campaign.id">
-        <div class="card h-100">
+        <router-link
+          :to="`/campaigns/${campaign.id}`"
+          class="card h-100 text-decoration-none text-light"
+        >
           <div class="card-body">
             <h5 class="card-title">{{ campaign.name }}</h5>
             <p class="card-text">
               System: {{ campaign.system }}
             </p>
           </div>
-        </div>
+        </router-link>
       </div>
     </div>
 
