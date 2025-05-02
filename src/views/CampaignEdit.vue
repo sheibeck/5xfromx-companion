@@ -45,7 +45,7 @@
             {{ collapsedGroups[group.id] ? 'Expand' : 'Collapse' }}
           </button>
           <button class="btn btn-sm btn-outline-secondary" @click="startEditingGroup(group)">Edit</button>
-          <button class="btn btn-sm btn-outline-secondary" @click="printGroup(group.id)">Print</button>
+          <button class="btn btn-sm btn-outline-secondary" style="display:none;" @click="printGroup(group.id)">Print</button>
           <button class="btn btn-sm btn-danger" @click="confirmDeleteGroup(group.id)">Delete</button>
         </div>
       </div>
