@@ -307,7 +307,7 @@ async function deleteConfirmed() {
       await client.models.CharacterGroup.delete({ id: group.id })
     }
     await client.models.Campaign.delete({ id: campaign.value.id })
-    router.push('/')
+    router.push('/campaigns')
   }
 
   modal.value.visible = false
