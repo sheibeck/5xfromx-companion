@@ -9,8 +9,8 @@ and "delete" any "Todo" records.
 const schema =  a.schema({
   Campaign: a
     .model({
-      //id: a.id().required(),
       name: a.string().required(),
+      description: a.string(),
       system: a.enum(['FORGOTTEN_RUIN', 'FIVE_LEAGUES', 'FIVE_PARSECS']),
       characterGroups: a.hasMany('CharacterGroup', 'campaignId'),
     }),

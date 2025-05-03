@@ -1,14 +1,30 @@
 <template>
   <div class="container my-5">
     <div class="d-print-none">
-      <h1 class="mb-0 d-flex flex-wrap justify-content-between align-items-center">
-        {{ campaign?.name }}
-        <button class="btn btn-danger mt-2 mt-sm-0 btn-sm" @click="confirmDeleteCampaign">Delete Campaign</button>
-      </h1>
-      <small class="text-secondary">
-        {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }}
-      </small>
-
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div>
+          <div v-if="editingCampaign" class="d-flex flex-column gap-2">
+            <input v-model="campaignForm.name" class="form-control mb-2" placeholder="Campaign Name" />
+            <textarea v-model="campaignForm.description" class="form-control" rows="4" placeholder="Campaign Description (Markdown supported)"></textarea>
+            <div class="mt-2">
+              <button class="btn btn-primary btn-sm me-2" @click="saveCampaign">Save</button>
+              <button class="btn btn-secondary btn-sm" @click="editingCampaign = false">Cancel</button>
+            </div>
+          </div>
+          <div v-else>
+            <h1 class="mb-0">{{ campaign?.name }}</h1>
+            <small class="text-secondary">
+              {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }}
+            </small>
+            <div v-html="renderMarkdown(campaign?.description || '')" class="mt-2"></div>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+          <button v-if="!editingCampaign" class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
+          <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete Campaign</button>
+        </div>
+      </div>
+      
       <div v-if="loading">Loading...</div>
 
       <div class="my-2" v-else>
@@ -155,10 +171,12 @@ const route = useRoute()
 const router = useRouter()
 const client = generateClient<Schema>()
 
-const campaign = ref<Schema['Campaign']['type'] | null>(null)
 const loading = ref(true)
+const groupNameLabel = ref("Group")
 
-const groupNameLabel = ref("Group");
+const campaign = ref<Schema['Campaign']['type'] | null>(null)
+const campaignForm = ref<{ name: string; description: string }>({ name: '', description: '' })
+const editingCampaign = ref(false)
 
 const characterGroups = ref<Schema['CharacterGroup']['type'][]>([])
 const groupCharacters = ref<Record<string, Schema['Character']['type'][]>>({})
@@ -181,6 +199,23 @@ const modal = ref({
   groupId: '',
   characterId: ''
 })
+
+function editCampaign() {
+  if (!campaign.value) return
+  editingCampaign.value = true
+  campaignForm.value = {
+    name: campaign.value.name,
+    description: campaign.value.description || ''
+  }
+}
+
+async function saveCampaign() {
+  if (!campaign.value?.id) return
+  const { name, description } = campaignForm.value
+  await client.models.Campaign.update({ id: campaign.value.id, name, description })
+  editingCampaign.value = false
+  await loadCampaign()
+}
 
 function renderMarkdown(input: string) {
   return marked.parse(input)
