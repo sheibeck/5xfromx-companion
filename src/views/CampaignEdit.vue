@@ -120,7 +120,15 @@
 
         <form v-if="showCharacterForm[group.id]" @submit.prevent="createCharacter(group.id)" class="row g-3 d-print-none">
           <div class="col-md-5">
-            <input v-model="newCharacter[group.id].name" class="form-control" placeholder="Character name" required />
+            <div class="d-flex align-items-center">
+              <input
+                v-model="newCharacter[group.id].name"
+                class="form-control me-2"
+                placeholder="Character name"
+                required
+              />
+              <button class="btn btn-outline-secondary" type="button" @click="generateCharacterName(group.id)">🎲</button>
+            </div>
           </div>
           <div class="col-md-5">
             <textarea
@@ -166,6 +174,8 @@ import { marked } from 'marked'
 import templates from '../templates/groupTemplates'
 import characterTemplates from '../templates/characterTemplates'
 import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSystemDisplayName'
+import { uniqueNamesGenerator, type Config } from 'unique-names-generator';
+import {fantasy_names, fantasy_surnames, scifi_names, scifi_surnames, modern_names, modern_surnames} from '../templates/randomNames';
 
 const route = useRoute()
 const router = useRouter()
@@ -354,6 +364,33 @@ function printGroup(groupId: string) {
     printWindow.focus()
     printWindow.print()
     printWindow.close()
+  }
+}
+
+function generateCharacterName(groupId: string) {
+  const system = campaign.value?.system
+  if (!newCharacter.value[groupId]) newCharacter.value[groupId] = { name: '' }
+  if (system === 'FIVE_PARSECS') {
+    const fpConfig: Config = {
+      dictionaries: [scifi_names, scifi_surnames],
+      separator: ' ',
+      length: 2,
+    };
+    newCharacter.value[groupId].name = uniqueNamesGenerator(fpConfig);
+  } else if (system === 'FIVE_LEAGUES') {
+    const flConfig: Config = {
+      dictionaries: [fantasy_names, fantasy_surnames],
+      separator: ' ',
+      length: 2,
+    };
+    newCharacter.value[groupId].name = uniqueNamesGenerator(flConfig);
+  } else {
+    const frConfig: Config = {
+      dictionaries: [modern_names, modern_surnames],
+      separator: ' ',
+      length: 2,
+    };
+    newCharacter.value[groupId].name = uniqueNamesGenerator(frConfig);
   }
 }
 

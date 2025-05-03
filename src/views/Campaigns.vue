@@ -55,8 +55,8 @@
                 <select v-model="newCampaign.system" class="form-select" required>
                   <option disabled value="">Select a system</option>
                   <option value=0>Forgotten Ruin</option>
-                  <option value=1>5 Leagues</option>
-                  <option value=2>5 Parsecs</option>
+                  <option value=1>5 Leagues From the Borderlands</option>
+                  <option value=2>5 Parsecs From Home</option>
                 </select>
               </div>
               <div class="modal-footer">
@@ -123,7 +123,6 @@ async function createCampaign() {
   fetchCampaigns();
 }
 
-
 async function fetchCampaigns() {
   const { data: items, errors } = await client.models.Campaign.list();
   if (errors) {
@@ -142,7 +141,6 @@ onMounted(() => {
   fetchCampaigns()
 })
 </script>
-
 
 <style scoped>
 .modal {

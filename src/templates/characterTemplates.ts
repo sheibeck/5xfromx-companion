@@ -1,28 +1,4 @@
 const characterTemplates = {
-    FORGOTTEN_RUIN: `**Luck:** []  **Injured:** [] [] **Advancement:** [] []
-
----
-
-- **Reactions**:
-- **Speed**
-- **Combat Skill**:
-- **Tougness**:
-- **Wits**: 
-
----
-
-**Weapons**
-- ______________ **Range**: _____ **Shots**: _____ **Damage**: _____
-    - **Description**: 
-- ______________ **Range**: _____ **Shots**: _____ **Damage**: _____
-    - **Description**: 
-
----
-
-**Gear**:
-
-**Abilities**:`,
-  
     FIVE_LEAGUES: `**Origin:** ____________________ **XP:** ________ **Level:** ______
 
 ---
@@ -71,7 +47,31 @@ const characterTemplates = {
 
 ---
 
-**Notes**:`
+**Notes**:`,
+
+    FORGOTTEN_RUIN: `**Luck:** [ ]  **Injured:** [ ] [ ] **Advancement:** [ ] [ ]
+
+---
+
+- **Reactions**:
+- **Speed**
+- **Combat Skill**:
+- **Tougness**:
+- **Wits**: 
+
+---
+
+**Weapons**
+- ______________ **Range**: _____ **Shots**: _____ **Damage**: _____
+    - **Description**: 
+- ______________ **Range**: _____ **Shots**: _____ **Damage**: _____
+    - **Description**: 
+
+---
+
+**Gear**:
+
+**Abilities**:`,
 };
   
 export default characterTemplates;

@@ -1,31 +1,20 @@
 const templates: Record<string, string> = {
-    FIVE_LEAGUES: `**Region:**  
-**Current Location:**  
-**Gold Marks:**  
-**Story Points:**  
+    FIVE_LEAGUES: `- **Region:**  
+- **Current Location:**  
+- **Gold Marks:**  
+- **Story Points:**
+
+---
+
 **Equipment Stash:**
+
+---
+
 **Backpack:**
-  `,
+
+`,
   
-    FORGOTTEN_RUIN: `- **Campaign Turns:** ________
-- **Story Points:** ________
-- **Victory Points:** ________
-- **Support Points:** ________
-- **Exposure Points:** ____________
-- **Allies Used:** [ ] [ ] [ ]
-
-**Difficulty Factors**:
-
----
-
-**Villains**:
-
----
-
-**Stash**:`,
-  
-    FIVE_PARSECS: `##### Crew
-**Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____
+    FIVE_PARSECS: `**Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____
 
 ---
 
@@ -73,7 +62,26 @@ const templates: Record<string, string> = {
 
  War Progress:
 
- Notes:`
+ Notes:`,
+
+ FORGOTTEN_RUIN: `- **Campaign Turns:**
+ - **Story Points:** 
+ - **Victory Points:** 
+ - **Support Points:** 
+ - **Exposure Points:**
+ - **Kit Points:**
+ - **Allies Used:** [ ] [ ] [ ]
+ - **Replacements Used (Max 12):**
+ 
+ **Difficulty Factors**:
+ 
+ ---
+ 
+ **Villains**:
+ 
+ ---
+ 
+ **Stash**:`,
   }
   
   export default templates;
