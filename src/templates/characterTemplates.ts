@@ -15,9 +15,14 @@ const characterTemplates = {
 
 **Proficiencies & Spells:** 
 
+**Skills:**
+
 ---
 
-**Skills:**
+| Weapon         | Range | Damage |
+|----------------|-------------|--------|
+| **Weapon Name**       |           |      |
+| **Trait**: *Trait description* ||||
 
 ---
 
@@ -35,11 +40,10 @@ const characterTemplates = {
 
 ---
 
-**Weapons**
-- ______________ **Range**: ______ **Shots**: ___ **Damage**: _____
-    - **Traits**: 
-- ______________ **Range**: ______ **Shots**: ___ **Damage**: _____
-    - **Traits**:  
+| Weapon         | Range | Shots | Damage |
+|----------------|-------------|--------|--------|
+| **Weapon Name**       | 0"          | 0      | +0     |
+| **Trait**: *Trait description* ||||
 
 ---
 
@@ -54,18 +58,17 @@ const characterTemplates = {
 ---
 
 - **Reactions**:
-- **Speed**
+- **Speed**:
 - **Combat Skill**:
 - **Tougness**:
 - **Wits**: 
 
 ---
 
-**Weapons**
-- ______________ **Range**: _____ **Shots**: _____ **Damage**: _____
-    - **Description**: 
-- ______________ **Range**: _____ **Shots**: _____ **Damage**: _____
-    - **Description**: 
+| Weapon         | Range | Shots | Damage |
+|----------------|-------------|--------|--------|
+| **Weapon Name**       | 0"          | 0      | +0     |
+| **Trait**: *Trait description* ||||
 
 ---
 
