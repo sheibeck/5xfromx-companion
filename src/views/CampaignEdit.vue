@@ -2,7 +2,7 @@
   <div class="container my-5">
     <div class="d-print-none">
       <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-        <div>
+        <div class="w-100">
           <div v-if="editingCampaign" class="d-flex flex-column gap-2">
             <input v-model="campaignForm.name" class="form-control mb-2" placeholder="Campaign Name" />
             <textarea v-model="campaignForm.description" class="form-control" rows="4" placeholder="Campaign Description (Markdown supported)"></textarea>
@@ -21,10 +21,10 @@
         </div>
         <div class="d-flex gap-2 mt-3 mt-md-0">
           <button v-if="!editingCampaign" class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
-          <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete Campaign</button>
+          <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete</button>
         </div>
       </div>
-      
+
       <div v-if="loading">Loading...</div>
 
       <div class="my-2" v-else>

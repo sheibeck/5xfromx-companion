@@ -25,6 +25,7 @@
             <p class="card-text">
               {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }}
             </p>
+            <div v-html="renderMarkdown(campaign?.description || '')" class="text-secondary"></div>
           </div>
         </router-link>
       </div>
@@ -77,6 +78,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { marked } from 'marked'
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
 import { gameSystemDisplayName } from '../enums/gameSystemDisplayName'
@@ -130,6 +132,10 @@ async function fetchCampaigns() {
   campaigns.value = items; 
 
   loading.value = false;
+}
+
+function renderMarkdown(input: string) {
+  return marked.parse(input)
 }
 
 onMounted(() => {
