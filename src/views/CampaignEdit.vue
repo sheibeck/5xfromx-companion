@@ -14,24 +14,24 @@
       <div class="my-2" v-else>
         <div class="mb-3">
           <button class="btn btn-outline-success" @click="showGroupForm = !showGroupForm">
-            {{ showGroupForm ? 'Cancel' : 'Add New Group' }}
+            {{ showGroupForm ? 'Cancel' : `Add New ${groupNameLabel}` }}
           </button>
         </div>
 
         <form v-if="showGroupForm" @submit.prevent="createGroup" class="mb-3 row g-3">
           <div class="col-md-5">
-            <input v-model="newGroup.name" class="form-control" :placeholder="groupNameLabel" required />
+            <input v-model="newGroup.name" class="form-control" :placeholder="`${groupNameLabel} Name`" required />
           </div>
           <div class="col-md-5">
             <textarea
               v-model="newGroup.description"
               class="form-control"
-              placeholder="Group description (Markdown supported)"
+              :placeholder="`${groupNameLabel} description (Markdown supported)`"
               rows="5"
             ></textarea>
           </div>
           <div class="col-md-2">
-            <button type="submit" class="btn btn-success w-100">Add Group</button>
+            <button type="submit" class="btn btn-success w-100">Add {{groupNameLabel}}</button>
           </div>
         </form>
       </div>
@@ -158,7 +158,7 @@ const client = generateClient<Schema>()
 const campaign = ref<Schema['Campaign']['type'] | null>(null)
 const loading = ref(true)
 
-const groupNameLabel = ref("Group Name");
+const groupNameLabel = ref("Group");
 
 const characterGroups = ref<Schema['CharacterGroup']['type'][]>([])
 const groupCharacters = ref<Record<string, Schema['Character']['type'][]>>({})
@@ -327,7 +327,7 @@ onMounted(async () => {
   await loadGroupsWithCharacters()
   loading.value = false
 
-  groupNameLabel.value = campaign?.value ? `${groupSystemDisplayName[campaign.value.system as keyof typeof groupSystemDisplayName]} Name` : "Group Name";
+  groupNameLabel.value = campaign?.value ? `${groupSystemDisplayName[campaign.value.system as keyof typeof groupSystemDisplayName]}` : "Group";
 })
 </script>
 

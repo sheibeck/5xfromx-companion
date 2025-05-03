@@ -6,7 +6,7 @@
       <router-link to="/" class="navbar-brand d-flex align-items-center gap-2">
         <img src="./assets/logo.png" alt="Logo" class="logo-img" />
         <div class="d-flex flex-column lh-1 logo-text">
-          <span class="fw-bold fs-5">5 x From x</span>
+          <span class="fw-bold fs-5">Five X</span>
           <span class="text-danger small">Companion</span>
         </div>
       </router-link>

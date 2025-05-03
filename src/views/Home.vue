@@ -2,7 +2,7 @@
   <router-link to="/campaigns" class="splash-wrapper d-block text-center text-decoration-none">
     <div class="position-relative splash-container">
       <h1 class="splash-heading text-light">
-        5 x From x <span class="text-danger">Companion</span>
+        Five X <span class="text-danger">Companion</span>
       </h1>
       <img src="../assets/splash.png" alt="Splash Image" class="img-fluid splash-image" />
     </div>
