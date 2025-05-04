@@ -21,9 +21,11 @@ const templates: Record<string, string> = {
 - _________________ [ ]
 `,
   
-    FIVE_PARSECS: `**Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____ 
+    FIVE_PARSECS: `**Turn:** _____ **Difficulty:** _____ **Victory:** _____
 
-    **Turn:** _____ **Difficulty:** _____ **Victory:** _____
+    **Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____ 
+
+    **Story Track**: _____ **Event**: _____ **Clock**: _____ **Rumors**: _____
 
     **Notes:**
 
@@ -38,13 +40,6 @@ const templates: Record<string, string> = {
 - **Debt**: 
 - **Traits**:
 - **Upgrades**:
-
----
-
-- **Story Track**: 
-- **Event**: 
-- **Clock**: 
-- **Rumors**:
 
 ---
 
