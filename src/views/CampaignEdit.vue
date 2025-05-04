@@ -1,27 +1,32 @@
 <template>
   <div class="container my-5">
     <div class="d-print-none">
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-        <div class="w-100">
-          <div v-if="editingCampaign" class="d-flex flex-column gap-2">
-            <input v-model="campaignForm.name" class="form-control mb-2" placeholder="Campaign Name" />
-            <textarea v-model="campaignForm.description" class="form-control" rows="4" placeholder="Campaign Description (Markdown supported)"></textarea>
-            <div class="mt-2">
-              <button class="btn btn-primary btn-sm me-2" @click="saveCampaign">Save</button>
-              <button class="btn btn-secondary btn-sm" @click="editingCampaign = false">Cancel</button>
+      <div class="d-flex flex-column">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+          <div class="w-100">
+            <div v-if="editingCampaign" class="d-flex flex-column gap-2">
+              <input v-model="campaignForm.name" class="form-control mb-2" placeholder="Campaign Name" />
+              <textarea v-model="campaignForm.description" class="form-control" rows="4" placeholder="Campaign Description (Markdown supported)"></textarea>
+              <div class="mt-2">
+                <button class="btn btn-primary btn-sm me-2" @click="saveCampaign">Save</button>
+                <button class="btn btn-secondary btn-sm" @click="editingCampaign = false">Cancel</button>
+              </div>
+            </div>
+            <div v-else>
+              <h1 class="mb-0">{{ campaign?.name }}</h1>
+              <small class="text-secondary">
+                {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }} Campaign
+              </small>
+              <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
+                <button class="btn btn-outline-secondary btn-sm" @click="toggleCampaignDescription">
+                  {{ showCampaignDescription ? 'Collapse' : 'Show' }}
+                </button>
+                <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete</button>
+              </div>
+              <div v-if="showCampaignDescription" v-html="renderMarkdown(campaign?.description || '')" class="mt-2"></div>
             </div>
           </div>
-          <div v-else>
-            <h1 class="mb-0">{{ campaign?.name }}</h1>
-            <small class="text-secondary">
-              {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }}
-            </small>
-            <div v-html="renderMarkdown(campaign?.description || '')" class="mt-2"></div>
-          </div>
-        </div>
-        <div class="d-flex gap-2 mt-3 mt-md-0">
-          <button v-if="!editingCampaign" class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
-          <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete</button>
         </div>
       </div>
 
@@ -178,7 +183,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { generateClient } from 'aws-amplify/data'
 import type { Schema } from '../../amplify/data/resource'
 import { marked } from 'marked'
-import templates from '../templates/groupTemplates'
+import templates from '../templates/campaignTemplates'
 import characterTemplates from '../templates/characterTemplates'
 import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSystemDisplayName'
 import { uniqueNamesGenerator, type Config } from 'unique-names-generator';
@@ -192,6 +197,7 @@ const client = generateClient<Schema>()
 const loading = ref(true)
 const groupNameLabel = ref("Group")
 
+const showCampaignDescription = ref(true)
 const campaign = ref<Schema['Campaign']['type'] | null>(null)
 const campaignForm = ref<{ name: string; description: string }>({ name: '', description: '' })
 const editingCampaign = ref(false)
@@ -259,7 +265,7 @@ async function loadGroupsWithCharacters() {
   const { data } = await client.models.CharacterGroup.list({ filter: { campaignId: { eq: campaign.value.id } } })
   for (const group of data) {
     groupCharacters.value[group.id] = await loadCharactersForGroup(group.id)
-    newCharacter.value[group.id] = { name: '', description: campaign.value?.system ? characterTemplates[campaign.value.system] : '' }
+    //newCharacter.value[group.id] = { name: '', description: campaign.value?.system ? characterTemplates[campaign.value.system] : '' }
   }
   characterGroups.value = data
 }
@@ -267,7 +273,7 @@ async function loadGroupsWithCharacters() {
 async function createGroup() {
   if (!campaign.value?.id) return
   await client.models.CharacterGroup.create({ ...newGroup.value, campaignId: campaign.value.id })
-  newGroup.value = { name: '', description: campaign.value.system ? templates[campaign.value.system] : '' }
+  newGroup.value = { name: '', description: '' }
   await loadGroupsWithCharacters()
 }
 
@@ -351,6 +357,10 @@ async function updateCharacter(groupId: string, characterId: string) {
   editingCharacterId.value = null
   editCharacter.value = { name: '', description: '' }
   groupCharacters.value[groupId] = await loadCharactersForGroup(groupId)
+}
+
+function toggleCampaignDescription() {
+  showCampaignDescription.value = !showCampaignDescription.value
 }
 
 function toggleCharacterForm(groupId: string) {
