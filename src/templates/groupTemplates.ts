@@ -21,7 +21,11 @@ const templates: Record<string, string> = {
 - _________________ [ ]
 `,
   
-    FIVE_PARSECS: `**Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____
+    FIVE_PARSECS: `**Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____ 
+
+    **Turn:** _____ **Difficulty:** _____ **Victory:** _____
+
+    **Notes:**
 
 ---
 
@@ -34,10 +38,6 @@ const templates: Record<string, string> = {
 - **Debt**: 
 - **Traits**:
 - **Upgrades**:
-
----
-
-**Notes:**
 
 ---
 
@@ -56,8 +56,8 @@ const templates: Record<string, string> = {
 
 ---
 
-| **Patrons**             | **Rivals**              |
-|-------------------------|--------------------------|
+| **Patrons**            | **Rivals**               |
+|------------------------|--------------------------|
 | ______________________ | ________________________ |
 | ______________________ | ________________________ |
 | ______________________ | ________________________ |
@@ -65,11 +65,11 @@ const templates: Record<string, string> = {
 | ______________________ | ________________________ |
 
 ---
- Invading Force:
+ **Invading Force**:
 
- War Progress:
+ **War Progress**:
 
- Notes:`,
+ **Notes:**`,
 
  FORGOTTEN_RUIN: `- **Campaign Turns:**
  - **Story Points:** 
