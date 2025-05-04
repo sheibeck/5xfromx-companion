@@ -30,6 +30,7 @@ const schema =  a.schema({
       description: a.string(),
       characterGroupId: a.id(),
       characterGroup: a.belongsTo('CharacterGroup', 'characterGroupId'),
+      sortOrder: a.integer(),
     })
 })
 .authorization(allow => [

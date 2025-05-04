@@ -1,17 +1,24 @@
 const templates: Record<string, string> = {
-    FIVE_LEAGUES: `- **Region:**  
+    FIVE_LEAGUES: `
+- **Region:**  
 - **Current Location:**  
 - **Gold Marks:**  
 - **Story Points:**
+- **Adventure Points:**
+- **Hidden Locations:**
 
 ---
 
 **Equipment Stash:**
 
----
-
 **Backpack:**
 
+**Notes:**
+
+**Threat Levels**
+- _________________ [ ]
+- _________________ [ ]
+- _________________ [ ]
 `,
   
     FIVE_PARSECS: `**Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____

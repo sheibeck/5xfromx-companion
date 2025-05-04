@@ -85,31 +85,38 @@
           <div v-html="renderMarkdown(group.description || '')" class="mb-3"></div>
         </div>
 
+      
         <div class="row">
-          <div
-            v-for="char in groupCharacters[group.id] || []"
-            :key="char.id"
-            class="col-12 col-md-6 mb-3"
+          <draggable
+            :list="groupCharacters[group.id]"
+            group="characters"
+            item-key="id"
+            class="row"
+            @end="onCharacterDragEnd(group.id)"
           >
-            <div class="p-2 p-sm-3 border bg-dark text-light">
-              <div v-if="editingCharacterId === char.id" class="d-print-none">
-                <input v-model="editCharacter.name" class="form-control mb-2" required />
-                <textarea v-model="editCharacter.description" class="form-control" rows="4"></textarea>
-                <div class="d-flex flex-wrap gap-2 mt-2">
-                  <button class="btn btn-sm btn-primary" @click="updateCharacter(group.id, char.id)">Save</button>
-                  <button class="btn btn-sm btn-secondary" @click="cancelEditingCharacter">Cancel</button>
+            <template #item="{ element: char }">
+              <div class="col-12 col-md-6 mb-3">
+                <div class="p-2 p-sm-3 border bg-dark text-light">
+                  <div v-if="editingCharacterId === char.id" class="d-print-none">
+                    <input v-model="editCharacter.name" class="form-control mb-2" required />
+                    <textarea v-model="editCharacter.description" class="form-control" rows="4"></textarea>
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                      <button class="btn btn-sm btn-primary" @click="updateCharacter(group.id, char.id)">Save</button>
+                      <button class="btn btn-sm btn-secondary" @click="cancelEditingCharacter">Cancel</button>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <strong>{{ char.name }}</strong>
+                    <div v-html="renderMarkdown(char.description || '')"></div>
+                    <div class="d-flex flex-wrap gap-2 mt-2 d-print-none">
+                      <button class="btn btn-sm btn-outline-secondary" @click="startEditingCharacter(char)">Edit</button>
+                      <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteCharacter(group.id, char.id)">Delete</button>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div v-else>
-                <strong>{{ char.name }}</strong>
-                <div v-html="renderMarkdown(char.description || '')"></div>
-                <div class="d-flex flex-wrap gap-2 mt-2 d-print-none">
-                  <button class="btn btn-sm btn-outline-secondary" @click="startEditingCharacter(char)">Edit</button>
-                  <button class="btn btn-sm btn-outline-danger" @click="confirmDeleteCharacter(group.id, char.id)">Delete</button>
-                </div>
-              </div>
-            </div>
-          </div>
+            </template>
+          </draggable>
         </div>
 
         <div class="mb-2 d-print-none">
@@ -176,6 +183,7 @@ import characterTemplates from '../templates/characterTemplates'
 import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSystemDisplayName'
 import { uniqueNamesGenerator, type Config } from 'unique-names-generator';
 import {fantasy_names, fantasy_surnames, scifi_names, scifi_surnames, modern_names, modern_surnames} from '../templates/randomNames';
+import draggable from 'vuedraggable'
 
 const route = useRoute()
 const router = useRouter()
@@ -243,7 +251,7 @@ async function loadCampaign() {
 
 async function loadCharactersForGroup(groupId: string) {
   const { data } = await client.models.Character.list({ filter: { characterGroupId: { eq: groupId } } })
-  return data
+  return data.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 }
 
 async function loadGroupsWithCharacters() {
@@ -283,7 +291,11 @@ async function updateGroup(groupId: string) {
 async function createCharacter(groupId: string) {
   const entry = newCharacter.value[groupId]
   if (!entry.name) return
-  await client.models.Character.create({ ...entry, characterGroupId: groupId })
+  await client.models.Character.create({
+    ...entry,
+    characterGroupId: groupId,
+    sortOrder: groupCharacters.value[groupId]?.length || 0 // 👈 set order based on current length
+  })
   newCharacter.value[groupId] = { name: '', description: campaign.value?.system ? characterTemplates[campaign.value.system] : ''}
   groupCharacters.value[groupId] = await loadCharactersForGroup(groupId)
 }
@@ -391,6 +403,16 @@ function generateCharacterName(groupId: string) {
       length: 2,
     };
     newCharacter.value[groupId].name = uniqueNamesGenerator(frConfig);
+  }
+}
+
+async function onCharacterDragEnd(groupId: string) {
+  const characters = groupCharacters.value[groupId] || []
+  for (let i = 0; i < characters.length; i++) {
+    const char = characters[i]
+    if (char.sortOrder !== i) {
+      await client.models.Character.update({ id: char.id, sortOrder: i })
+    }
   }
 }
 
