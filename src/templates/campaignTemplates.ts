@@ -1,5 +1,5 @@
 const templates: Record<string, string> = {
-    FIVE_LEAGUES: `
+    FIVE_LEAGUES: `###### Campaign
 - **Region:**  
 - **Current Location:**  
 - **Gold Marks:**  
@@ -21,52 +21,31 @@ const templates: Record<string, string> = {
 - _________________ [ ]
 `,
   
-    FIVE_PARSECS: `**Turn:** _____ **Difficulty:** _____ **Victory:** _____
+    FIVE_PARSECS: `###### Campaign
+**Turn:** _____ **Difficulty:** _____ **Victory:** _____
 
-    **Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____ 
+**Credits:** _____  **Patrons:** _____  **Rivals:** _____ **Story Points:** _____ 
 
-    **Story Track**: _____ **Event**: _____ **Clock**: _____ **Rumors**: _____
+**Story Track**: _____ **Event**: _____ **Clock**: _____ **Rumors**: _____
 
-    **Notes:**
-
----
-
-**Stashed Equipment:**
-
----
-
-**Ship Name:**
-- **Hull Points:**
-- **Debt**: 
-- **Traits**:
-- **Upgrades**:
+**Notes:**
 
 ---
 
 ##### Worlds
 
-**World Name**: ______________ **License Required**: Yes/No/Obtained
+**World Name**: ______________ **License Required**: Yes/No
 
 **Traits**:
 
----
+**Invading Force**:
 
-| **Patrons**            | **Rivals**               |
-|------------------------|--------------------------|
-| ______________________ | ________________________ |
-| ______________________ | ________________________ |
-| ______________________ | ________________________ |
-| ______________________ | ________________________ |
-| ______________________ | ________________________ |
+**War Progress**:
 
----
- **Invading Force**:
+**Notes:**`,
 
- **War Progress**:
-
- **Notes:**`,
-
- FORGOTTEN_RUIN: `- **Campaign Turns:**
+ FORGOTTEN_RUIN: `###### Campaign
+ - **Campaign Turns:**
  - **Story Points:** 
  - **Victory Points:** 
  - **Support Points:** 

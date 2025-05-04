@@ -1,69 +1,70 @@
 <template>
   <div class="container my-5">
-    <div class="d-print-none">
-      <div class="d-flex flex-column">
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
-          <div class="w-100">
-            <div v-if="editingCampaign" class="d-flex flex-column gap-2">
-              <input v-model="campaignForm.name" class="form-control mb-2" placeholder="Campaign Name" />
-              <textarea v-model="campaignForm.description" class="form-control" rows="4" placeholder="Campaign Description (Markdown supported)"></textarea>
-              <div class="mt-2">
-                <button class="btn btn-primary btn-sm me-2" @click="saveCampaign">Save</button>
-                <button class="btn btn-secondary btn-sm" @click="editingCampaign = false">Cancel</button>
-              </div>
-            </div>
-            <div v-else>
-              <h1 class="mb-0">{{ campaign?.name }}</h1>
-              <small class="text-secondary">
-                {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }} Campaign
-              </small>
-              <div class="d-flex gap-2 mt-2">
-                <button class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
-                <button class="btn btn-outline-secondary btn-sm" @click="toggleCampaignDescription">
-                  {{ showCampaignDescription ? 'Collapse' : 'Show' }}
-                </button>
-                <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete</button>
-              </div>
-              <div v-if="showCampaignDescription" v-html="renderMarkdown(campaign?.description || '')" class="mt-2"></div>
+
+    <div class="d-flex flex-column">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+        <div class="w-100">
+          <div v-if="editingCampaign" class="d-flex flex-column gap-2 card">
+            <input v-model="campaignForm.name" class="form-control mb-2" placeholder="Campaign Name" />
+            <textarea v-model="campaignForm.description" class="form-control" :rows="editRows" placeholder="Campaign Description (Markdown supported)"></textarea>
+            <div class="mt-2">
+              <button class="btn btn-primary btn-sm me-2" @click="saveCampaign">Save</button>
+              <button class="btn btn-secondary btn-sm" @click="editingCampaign = false">Cancel</button>
             </div>
           </div>
+          <div v-else>
+            <h1 class="mb-0">{{ campaign?.name }}</h1>
+            <small class="text-secondary">
+              {{ campaign?.system && gameSystemDisplayName[campaign.system as keyof typeof gameSystemDisplayName] }} Campaign
+            </small>
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
+              <button class="btn btn-outline-secondary btn-sm" @click="toggleCampaignDescription">
+                {{ showCampaignDescription ? 'Hide' : 'Show' }}
+              </button>
+              <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete</button>
+            </div>
+            <div v-if="showCampaignDescription" v-html="renderMarkdown(campaign?.description || '')" class="mt-2 card"></div>
+          </div>
         </div>
-      </div>
-
-      <div v-if="loading">Loading...</div>
-
-      <div class="my-2" v-else>
-        <div class="mb-3">
-          <button class="btn btn-outline-success" @click="showGroupForm = !showGroupForm">
-            {{ showGroupForm ? 'Cancel' : `Add New ${groupNameLabel}` }}
-          </button>
-        </div>
-
-        <form v-if="showGroupForm" @submit.prevent="createGroup" class="mb-3 row g-3">
-          <div class="col-md-5">
-            <input v-model="newGroup.name" class="form-control" :placeholder="`${groupNameLabel} Name`" required />
-          </div>
-          <div class="col-md-5">
-            <textarea
-              v-model="newGroup.description"
-              class="form-control"
-              :placeholder="`${groupNameLabel} description (Markdown supported)`"
-              rows="5"
-            ></textarea>
-          </div>
-          <div class="col-md-2">
-            <button type="submit" class="btn btn-success w-100">Add {{groupNameLabel}}</button>
-          </div>
-        </form>
       </div>
     </div>
 
-    <div v-for="group in characterGroups" :key="group.id" class="card mb-4">
+    <div v-if="loading">Loading...</div>
+
+    <!-- Character Groups -->
+    <div class="my-4" v-if="!loading">
+      <h3>{{groupNameLabel}}s</h3>
+      <div class="mb-3">
+        <button class="btn btn-outline-success" @click="showGroupForm = !showGroupForm">
+          {{ showGroupForm ? 'Cancel' : `Add New ${groupNameLabel}` }}
+        </button>
+      </div>
+
+      <div v-if="showGroupForm" class="w-100">
+        <div class="d-flex flex-column gap-2 card">
+          <input v-model="newGroup.name" class="form-control" :placeholder="`${groupNameLabel} Name`" required />
+          <textarea
+            v-model="newGroup.description"
+            class="form-control"
+            :placeholder="`${groupNameLabel} description (Markdown supported)`"
+            :rows="editRows"
+          ></textarea>
+        </div>
+        <div class="mt-2">
+          <button class="btn btn-primary btn-sm me-2" @click="createGroup">Add {{groupNameLabel}}</button>
+          <button class="btn btn-secondary btn-sm me-2" @click="showGroupForm = !showGroupForm">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Characters -->
+    <div v-if="!loading" v-for="group in characterGroups" :key="group.id" class="card mb-4">
       <div class="card-header d-flex flex-wrap justify-content-between align-items-center">
         <strong>{{ group.name }}</strong>
         <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0 d-print-none">
           <button class="btn btn-sm btn-outline-primary" @click="toggleGroupCollapse(group.id)">
-            {{ collapsedGroups[group.id] ? 'Expand' : 'Collapse' }}
+            {{ collapsedGroups[group.id] ? 'Show' : 'Hide' }}
           </button>
           <button class="btn btn-sm btn-outline-secondary" @click="startEditingGroup(group)">Edit</button>
           <button class="btn btn-sm btn-outline-secondary" style="display:none;" @click="printGroup(group.id)">Print</button>
@@ -72,25 +73,21 @@
       </div>
 
       <div class="card-body px-2 px-sm-4" v-if="!collapsedGroups[group.id]" :id="`print-${group.id}`">
-        <div v-if="editingGroupId === group.id" class="d-print-none">
-          <form @submit.prevent="updateGroup(group.id)" class="row g-3">
-            <div class="col-md-5">
-              <input v-model="editGroup.name" class="form-control" required />
+        <div class="w-100">
+          <div v-if="editingGroupId === group.id" class="d-flex flex-column gap-2 card">
+            <input v-model="editGroup.name" class="form-control" required  :placeholder="`${groupNameLabel} Name (Markdown Supported)`" />
+            <textarea v-model="editGroup.description" class="form-control" :rows="editRows" :placeholder="`${groupNameLabel} Description (Markdown Supported)`"></textarea>
+            <div class="mt-2">
+              <button class="btn btn-primary btn-sm me-2" @click="updateGroup(group.id)">Save</button>
+              <button class="btn btn-secondary btn-sm me-2" @click="cancelEditingGroup">Cancel</button>
             </div>
-            <div class="col-md-5">
-              <textarea v-model="editGroup.description" class="form-control" rows="5"></textarea>
-            </div>
-            <div class="col-md-2 d-flex gap-2">
-              <button type="submit" class="btn btn-primary">Save</button>
-              <button type="button" class="btn btn-secondary" @click="cancelEditingGroup">Cancel</button>
-            </div>
-          </form>
-        </div>
-        <div v-else>
-          <div v-html="renderMarkdown(group.description || '')" class="mb-3"></div>
+          </div>
+          <div v-else>
+            <div v-html="renderMarkdown(group.description || '')" class="mb-3"></div>
+          </div>
         </div>
 
-      
+        <!-- Characters -->
         <div class="row">
           <draggable
             :list="groupCharacters[group.id]"
@@ -104,7 +101,7 @@
                 <div class="p-2 p-sm-3 border bg-dark text-light">
                   <div v-if="editingCharacterId === char.id" class="d-print-none">
                     <input v-model="editCharacter.name" class="form-control mb-2" required />
-                    <textarea v-model="editCharacter.description" class="form-control" rows="4"></textarea>
+                    <textarea v-model="editCharacter.description" class="form-control" :rows="editRows"></textarea>
                     <div class="d-flex flex-wrap gap-2 mt-2">
                       <button class="btn btn-sm btn-primary" @click="updateCharacter(group.id, char.id)">Save</button>
                       <button class="btn btn-sm btn-secondary" @click="cancelEditingCharacter">Cancel</button>
@@ -130,8 +127,8 @@
           </button>
         </div>
 
-        <form v-if="showCharacterForm[group.id]" @submit.prevent="createCharacter(group.id)" class="row g-3 d-print-none">
-          <div class="col-md-5">
+        <div v-if="showCharacterForm[group.id]" class="w-100">
+          <div class="d-flex flex-column gap-2 card">
             <div class="d-flex align-items-center">
               <input
                 v-model="newCharacter[group.id].name"
@@ -141,19 +138,71 @@
               />
               <button class="btn btn-outline-secondary" type="button" @click="generateCharacterName(group.id)">🎲</button>
             </div>
-          </div>
-          <div class="col-md-5">
+
             <textarea
               v-model="newCharacter[group.id].description"
               class="form-control"
               placeholder="Character description (Markdown supported)"
-              rows="4"
+              :rows="editRows"
             ></textarea>
+            <div class="mt-1">
+              <button class="btn btn-primary btn-sm me-2" @click="createCharacter(group.id)">Add</button>
+              <button class="btn btn-secondary btn-sm me-2" @click="toggleCharacterForm(group.id)">Cancel</button>
+            </div>
           </div>
-          <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campaign Turns -->
+    <div v-if="!loading" class="my-4">
+      <h3 class="mb-2">Campaign Turns</h3>
+
+      <div class="mb-3">
+        <button class="btn btn-outline-success" @click="showTurnForm = !showTurnForm">
+          {{ showTurnForm ? 'Cancel' : 'Add New Turn' }}
+        </button>
+      </div>
+
+      <div v-if="showTurnForm" class="w-100">
+        <div class="d-flex flex-column gap-2 card">
+         
+          <input type="number" v-model.number="newTurn.turnNumber" class="form-control" min="1" required />
+          <textarea v-model="newTurn.description" class="form-control" :rows="editRows"></textarea>
+
+          <div class="mt-2">
+            <button class="btn btn-primary btn-sm me-2" @click="createTurn">Add Turn</button>
+            <button class="btn btn-secondary btn-sm me-2" @click="showTurnForm = !showTurnForm">Cancel</button>
           </div>
-        </form>
+        </div>
+      </div>
+
+      <div v-for="turn in sortedTurns" :key="turn.id" class="card mb-3">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <strong>Turn {{ turn.turnNumber }}</strong>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" @click="toggleTurnCollapse(turn.id)">
+              {{ !collapsedTurns[turn.id] ? 'Show' : 'Hide' }}
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" @click="startEditingTurn(turn)">Edit</button>
+            <button class="btn btn-sm btn-danger" @click="confirmDeleteTurn(turn.id)">Delete</button>
+          </div>
+        </div>
+        <div class="card-body" v-if="collapsedTurns[turn.id]">
+          <div v-if="editingTurnId === turn.id">
+            <div class="w-100">
+              <div class="row g-2">
+                <input type="number" v-model.number="editTurn.turnNumber" class="form-control" min="1" required />
+                <textarea v-model="editTurn.description" class="form-control" :rows="editRows"></textarea>
+              </div>
+              <div class="mt-2">
+                <button class="btn btn-primary btn-sm me-2" @click="updateTurn(turn.id)">Save</button>
+                <button class="btn btn-secondary btn-sm" @click="cancelEditingTurn">Cancel</button>
+              </div>
+            </div>
+          </div>
+          <div v-else v-html="renderMarkdown(turn.description || '')"></div>
+        </div>
       </div>
     </div>
 
@@ -178,13 +227,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { generateClient } from 'aws-amplify/data'
 import type { Schema } from '../../amplify/data/resource'
 import { marked } from 'marked'
-import templates from '../templates/campaignTemplates'
 import characterTemplates from '../templates/characterTemplates'
+import turnTemplates from '../templates/turnTemplates';
+import groupTamplates from '../templates/groupTemplates';
 import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSystemDisplayName'
 import { uniqueNamesGenerator, type Config } from 'unique-names-generator';
 import {fantasy_names, fantasy_surnames, scifi_names, scifi_surnames, modern_names, modern_surnames} from '../templates/randomNames';
@@ -193,6 +243,8 @@ import draggable from 'vuedraggable'
 const route = useRoute()
 const router = useRouter()
 const client = generateClient<Schema>()
+
+const editRows = ref(10);
 
 const loading = ref(true)
 const groupNameLabel = ref("Group")
@@ -216,6 +268,14 @@ const editCharacter = ref<{ name: string; description?: string }>({ name: '', de
 const showGroupForm = ref(false)
 const showCharacterForm = ref<Record<string, boolean>>({})
 const collapsedGroups = ref<Record<string, boolean>>({})
+
+const campaignTurns = ref<Schema['CampaignTurn']['type'][]>([]);
+const collapsedTurns = ref<Record<string, boolean>>({});
+const editingTurnId = ref<string | null>(null);
+const newTurn = ref({ turnNumber: 1, description: '' });
+const editTurn = ref({ turnNumber: 1, description: '' });
+
+const showTurnForm = ref(false);
 
 const modal = ref({
   visible: false,
@@ -250,8 +310,12 @@ async function loadCampaign() {
   const { data } = await client.models.Campaign.get({ id })
   campaign.value = data
 
-  if (campaign.value?.system && templates[campaign.value.system]) {
-    newGroup.value.description = templates[campaign.value.system]
+  if (campaign.value?.system && groupTamplates[campaign.value.system]) {
+    newGroup.value.description = groupTamplates[campaign.value.system];
+  }
+
+  if (campaign.value?.system && turnTemplates[campaign.value.system]) {
+    newTurn.value.description = turnTemplates[campaign.value.system];
   }
 }
 
@@ -265,15 +329,17 @@ async function loadGroupsWithCharacters() {
   const { data } = await client.models.CharacterGroup.list({ filter: { campaignId: { eq: campaign.value.id } } })
   for (const group of data) {
     groupCharacters.value[group.id] = await loadCharactersForGroup(group.id)
-    //newCharacter.value[group.id] = { name: '', description: campaign.value?.system ? characterTemplates[campaign.value.system] : '' }
+    newCharacter.value[group.id] = { name: '', description: campaign.value?.system ? characterTemplates[campaign.value.system] : '' }
   }
   characterGroups.value = data
 }
 
 async function createGroup() {
   if (!campaign.value?.id) return
-  await client.models.CharacterGroup.create({ ...newGroup.value, campaignId: campaign.value.id })
-  newGroup.value = { name: '', description: '' }
+  await client.models.CharacterGroup.create({ ...newGroup.value, campaignId: campaign.value.id });
+  showGroupForm.value = !showGroupForm;
+
+  newGroup.value = { name: '', description: campaign.value?.system ? groupTamplates[campaign.value.system] : '' }
   await loadGroupsWithCharacters()
 }
 
@@ -300,8 +366,11 @@ async function createCharacter(groupId: string) {
   await client.models.Character.create({
     ...entry,
     characterGroupId: groupId,
-    sortOrder: groupCharacters.value[groupId]?.length || 0 // 👈 set order based on current length
-  })
+    sortOrder: groupCharacters.value[groupId]?.length || 0,
+  });
+
+  toggleCharacterForm(groupId);
+
   newCharacter.value[groupId] = { name: '', description: campaign.value?.system ? characterTemplates[campaign.value.system] : ''}
   groupCharacters.value[groupId] = await loadCharactersForGroup(groupId)
 }
@@ -426,11 +495,69 @@ async function onCharacterDragEnd(groupId: string) {
   }
 }
 
+const sortedTurns = computed(() =>
+  [...campaignTurns.value].sort((a, b) => (b.turnNumber ?? 0) - (a.turnNumber ?? 0))
+);
+
+async function loadTurns() {
+  if (!campaign.value?.id) return;
+  const { data } = await client.models.CampaignTurn.list({
+    filter: { campaignId: { eq: campaign.value.id } },
+  });
+
+  campaignTurns.value = data;
+  newTurn.value.turnNumber = campaignTurns.value.length+1;
+}
+
+async function createTurn() {
+  if (!campaign.value?.id) return;
+  await client.models.CampaignTurn.create({
+    ...newTurn.value,
+    campaignId: campaign.value.id,
+  });
+  newTurn.value = {
+    turnNumber: campaignTurns.value?.length+1,
+    description: campaign.value?.system ? turnTemplates[campaign.value.system] : ''
+  };
+
+  showTurnForm.value = !showTurnForm;
+
+  await loadTurns();
+}
+
+function toggleTurnCollapse(turnId: string) {
+  collapsedTurns.value[turnId] = !collapsedTurns.value[turnId];
+}
+
+function startEditingTurn(turn: Schema['CampaignTurn']['type']) {
+  editingTurnId.value = turn.id;
+  editTurn.value = { turnNumber: turn.turnNumber ?? campaignTurns.value.length+1, description: turn.description || '' };
+}
+
+function cancelEditingTurn() {
+  editingTurnId.value = null;
+  editTurn.value = { turnNumber: campaignTurns.value.length+1, description: '' };
+}
+
+async function updateTurn(turnId: string) {
+  await client.models.CampaignTurn.update({ id: turnId, ...editTurn.value });
+  editingTurnId.value = null;
+  await loadTurns();
+}
+
+async function confirmDeleteTurn(turnId: string) {
+  if (confirm('Are you sure you want to delete this turn?')) {
+    await client.models.CampaignTurn.delete({ id: turnId });
+    await loadTurns();
+  }
+}
+
 onMounted(async () => {
   await loadCampaign()
   await loadGroupsWithCharacters()
-  loading.value = false
+  await loadTurns();
 
+  loading.value = false
   groupNameLabel.value = campaign?.value ? `${groupSystemDisplayName[campaign.value.system as keyof typeof groupSystemDisplayName]}` : "Group";
 })
 </script>
