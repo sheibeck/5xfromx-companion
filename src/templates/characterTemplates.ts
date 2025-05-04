@@ -1,5 +1,5 @@
 const characterTemplates = {
-    FIVE_LEAGUES: `**Origin:** ____________________ **XP:** ________ **Level:** ______
+    FIVE_LEAGUES: `**Origin:** _________ **Background**: _________ **XP:** ________ **Level:** ______
 
 ---
 
@@ -26,7 +26,9 @@ const characterTemplates = {
 
 **Equipment:**`,
   
-    FIVE_PARSECS: `**Species:** _______________________  **Luck:** ______  **XP:** ______ 
+    FIVE_PARSECS: `**Species:** ____________ **Background**: _________ **Class**: _______  
+
+**Luck:** ______  **XP:** ______
 
 ---
 
