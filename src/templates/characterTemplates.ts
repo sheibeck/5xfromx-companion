@@ -15,14 +15,12 @@ const characterTemplates = {
 
 **Proficiencies & Spells:** 
 
-**Skills:**
-
 ---
 
 | Weapon         | Range | Damage |
 |----------------|-------------|--------|
 | **Weapon Name**       |           |      |
-| **Trait**: *Trait description* ||||
+| **Notes**: *Notes description* ||||
 
 ---
 
