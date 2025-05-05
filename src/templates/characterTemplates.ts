@@ -18,7 +18,7 @@ const characterTemplates = {
 ---
 
 | Weapon         | Range | Damage |
-|----------------|-------------|--------|
+|----------------|:-----:|:------:|
 | **Weapon Name**       |           |      |
 | **Notes**: *Notes description* ||||
 
@@ -41,7 +41,7 @@ const characterTemplates = {
 ---
 
 | Weapon         | Range | Shots | Damage |
-|----------------|-------------|--------|--------|
+|----------------|:-----:|:-----:|:------:|
 | **Weapon Name**       | 0"          | 0      | +0     |
 | **Trait**: *Trait description* ||||
 
@@ -65,9 +65,9 @@ const characterTemplates = {
 
 ---
 
-| Weapon         | Range | Shots | Damage |
-|----------------|-------------|--------|--------|
-| **Weapon Name**       | 0"          | 0      | +0     |
+| Weapon          | Range | Shots | Damage |
+|-----------------|:-----:|:-----:|:------:|
+| **Weapon Name** | 0"    | 0     | +0     |
 | **Trait**: *Trait description* ||||
 
 ---
