@@ -1,15 +1,14 @@
 const characterTemplates = {
-    FIVE_LEAGUES: `**Origin:** _________ **Background**: _________ **XP:** ________ **Level:** ______
+    FIVE_LEAGUES: `**Origin:** _________ **Background**: _________ **XP:** ___ **Level:** ___ **Luck:** ___
 
 ---
 
-- **Agility:** 
-- **Speed:**
-- **Combat:**
-- **Tough:**
-- **Luck:**
-- **Will:**
-- **Casting:**
+**Agility:**___
+**Speed:**___
+**Combat:**___
+**Tough:**___
+**Will:**___
+**Casting:**___
 
 ---
 
@@ -20,7 +19,6 @@ const characterTemplates = {
 | Weapon         | Range | Damage |
 |----------------|:-----:|:------:|
 | **Weapon Name**       |           |      |
-| **Notes**: *Notes description* ||||
 
 ---
 
@@ -32,18 +30,13 @@ const characterTemplates = {
 
 ---
 
-- **Reactions:** 
-- **Speed:**  
-- **Combat:**  
-- **Toughness:**  
-- **Savvy:**  
+**React:** ___ **Speed:** ___ **Combat:** ___ **Tough:** ___ **Savvy:** ___
 
 ---
 
 | Weapon         | Range | Shots | Damage |
 |----------------|:-----:|:-----:|:------:|
 | **Weapon Name**       | 0"          | 0      | +0     |
-| **Trait**: *Trait description* ||||
 
 ---
 
@@ -57,18 +50,17 @@ const characterTemplates = {
 
 ---
 
-- **Reactions**:
-- **Speed**:
-- **Combat Skill**:
-- **Tougness**:
-- **Wits**: 
+**React**:___
+**Speed**:___
+**Combat**:___
+**Tough**:___
+**Wits**:___ 
 
 ---
 
 | Weapon          | Range | Shots | Damage |
 |-----------------|:-----:|:-----:|:------:|
 | **Weapon Name** | 0"    | 0     | +0     |
-| **Trait**: *Trait description* ||||
 
 ---
 
