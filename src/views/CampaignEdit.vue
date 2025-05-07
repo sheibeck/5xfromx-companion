@@ -19,12 +19,13 @@
             </small>
             <div class="d-flex gap-2 mt-2">
               <button class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
+              <button class="btn btn-sm btn-outline-secondary" @click="printCampaign()">Print</button>
               <button class="btn btn-outline-secondary btn-sm" @click="toggleCampaignDescription">
                 {{ showCampaignDescription ? 'Hide' : 'Show' }}
               </button>
               <button class="btn btn-danger btn-sm" @click="confirmDeleteCampaign">Delete</button>
             </div>
-            <div v-if="showCampaignDescription" v-html="renderMarkdown(campaign?.description || '')" class="mt-2 card"></div>
+            <div id="campaignDescription" v-if="showCampaignDescription" v-html="renderMarkdown(campaign?.description || '')" class="mt-2 card"></div>
           </div>
         </div>
       </div>
@@ -67,7 +68,7 @@
             {{ collapsedGroups[group.id] ? 'Show' : 'Hide' }}
           </button>
           <button class="btn btn-sm btn-outline-secondary" @click="startEditingGroup(group)">Edit</button>
-          <button class="btn btn-sm btn-outline-secondary" style="display:none;" @click="printGroup(group.id)">Print</button>
+          <button class="btn btn-sm btn-outline-secondary" @click="printGroup(group.id)">Print</button>
           <button class="btn btn-sm btn-danger" @click="confirmDeleteGroup(group.id)">Delete</button>
         </div>
       </div>
@@ -88,7 +89,7 @@
         </div>
 
         <!-- Characters -->
-        <h3>Characters</h3>
+        <h3 class="d-print-none">Characters</h3>
         <div class="row">
           <draggable
             :list="groupCharacters[group.id]"
@@ -186,10 +187,11 @@
               {{ !collapsedTurns[turn.id] ? 'Show' : 'Hide' }}
             </button>
             <button class="btn btn-sm btn-outline-secondary" @click="startEditingTurn(turn)">Edit</button>
+            <button class="btn btn-sm btn-outline-secondary" @click="printTurn(turn.id)">Print</button>
             <button class="btn btn-sm btn-danger" @click="confirmDeleteTurn(turn.id)">Delete</button>
           </div>
         </div>
-        <div class="card-body" v-if="collapsedTurns[turn.id]">
+        <div class="card-body" v-if="collapsedTurns[turn.id]" :id="`print-${turn.id}`">
           <div v-if="editingTurnId === turn.id">
             <div class="w-100">
               <div class="row g-2">
@@ -198,7 +200,7 @@
               </div>
               <div class="mt-2">
                 <button class="btn btn-primary btn-sm me-2" @click="updateTurn(turn.id)">Save</button>
-                <button class="btn btn-secondary btn-sm" @click="cancelEditingTurn">Cancel</button>
+                <button class="btn btn-secondary btn-sm me-2" @click="cancelEditingTurn">Cancel</button>
               </div>
             </div>
           </div>
@@ -441,21 +443,114 @@ function toggleGroupCollapse(groupId: string) {
   collapsedGroups.value[groupId] = !collapsedGroups.value[groupId]
 }
 
-function printGroup(groupId: string) {
-  const el = document.getElementById(`print-${groupId}`)
-  if (!el) return
-  const printContent = el.innerHTML
-  const printWindow = window.open('', '', 'height=600,width=800')
+function printCampaign() {
+  const el = document.getElementById(`campaignDescription`);
+  if (!el) return;
+  const printContent = el.innerHTML;
+  const printWindow = window.open('', '', 'height=600,width=800');
+
   if (printWindow) {
-    printWindow.document.write('<html><head><title>Print Character Group</title>')
-    printWindow.document.write('<link rel="stylesheet" href="/style.css">')
-    printWindow.document.write('</head><body>')
-    printWindow.document.write(printContent)
-    printWindow.document.write('</body></html>')
-    printWindow.document.close()
-    printWindow.focus()
-    printWindow.print()
-    printWindow.close()
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Campaign</title>
+          <link 
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" 
+            rel="stylesheet" 
+            integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" 
+            crossorigin="anonymous"
+          >
+          <link rel="stylesheet" type="text/css" href="/print.css">
+        </head>
+        <body>
+          <div class="container">
+            ${printContent}
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+
+    // Wait for stylesheets to load before printing
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
+  }
+}
+
+function printGroup(groupId: string) {
+  const el = document.getElementById(`print-${groupId}`);
+  if (!el) return;
+  const printContent = el.innerHTML;
+  const printWindow = window.open('', '', 'height=600,width=800');
+
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Group</title>
+          <link 
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" 
+            rel="stylesheet" 
+            integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" 
+            crossorigin="anonymous"
+          >
+          <link rel="stylesheet" type="text/css" href="/print.css">
+        </head>
+        <body>
+          <div class="container">
+            ${printContent}
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+
+    // Wait for stylesheets to load before printing
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
+  }
+}
+
+function printTurn(turnId: string) {
+  const el = document.getElementById(`print-${turnId}`);
+  if (!el) return;
+  const printContent = el.innerHTML;
+  const printWindow = window.open('', '', 'height=600,width=800');
+
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Print Campaign Turn</title>
+          <link 
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" 
+            rel="stylesheet" 
+            integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" 
+            crossorigin="anonymous"
+          >
+          <link rel="stylesheet" type="text/css" href="/print.css">
+        </head>
+        <body>
+          <div class="container">
+            ${printContent}
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+
+    // Wait for stylesheets to load before printing
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
   }
 }
 
@@ -564,4 +659,19 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-top-color: #333;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 </style>

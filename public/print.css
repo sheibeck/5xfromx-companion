@@ -1,0 +1,65 @@
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background: white;
+    color: black;
+    font-family: sans-serif;
+  }
+
+  .container,
+  .card,
+  .card-body,
+  .card-header,
+  .bg-dark {
+    background-color: white !important;
+    color: black !important;
+  }
+
+  .d-print-none,
+  button,
+  .btn,
+  .navbar,
+  .modal,
+  .modal-backdrop {
+    display: none !important;
+  }
+
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .col-md-6 {
+    width: 48%;
+    margin-right: 2%;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .col-md-6:nth-child(2n) {
+    margin-right: 0;
+  }
+
+  .p-2,
+  .p-sm-3 {
+    padding: 0.5rem !important;
+  }
+
+  .mb-3,
+  .mb-4,
+  .mt-2 {
+    margin-bottom: 0.5rem !important;
+    margin-top: 0.5rem !important;
+  }
+
+  h1, h3 {
+    page-break-after: avoid;
+  }
+
+  @page {
+    size: auto;
+    margin: 0.5in;
+  }
+
+}
