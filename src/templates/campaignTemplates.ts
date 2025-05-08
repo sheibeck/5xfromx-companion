@@ -34,15 +34,10 @@ const templates: Record<string, string> = {
 
 ##### Worlds
 
-**World Name**: ______________ **License Required**: Yes/No
-
-**Traits**:
-
-**Invading Force**:
-
-**War Progress**:
-
-**Notes:**`,
+| **World Name** | **License Required** | **Traits** | **Invading Force** | **War Progress** | **Notes** |
+|----------------|----------------------|------------|---------------------|------------------|-----------|
+|                |                      |            |                     |                  |           |
+`,
 
  FORGOTTEN_RUIN: `###### Campaign
  - **Campaign Turns:**
