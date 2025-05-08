@@ -135,7 +135,8 @@ async function fetchCampaigns() {
 }
 
 onMounted(() => {
-  fetchCampaigns()
+  fetchCampaigns();
+  document.title = `5x Companion - Campaigns`;
 })
 </script>
 

@@ -19,7 +19,7 @@
             </small>
             <div class="d-flex gap-2 mt-2">
               <button class="btn btn-outline-primary btn-sm" @click="editCampaign">Edit</button>
-              <button class="btn btn-sm btn-outline-secondary" @click="printCampaign()">Print</button>
+              <button class="btn btn-sm btn-outline-secondary" @click="print(`campaignDescription`, `Campaign`)">Print</button>
               <button class="btn btn-outline-secondary btn-sm" @click="toggleCampaignDescription">
                 {{ showCampaignDescription ? 'Hide' : 'Show' }}
               </button>
@@ -68,7 +68,7 @@
             {{ collapsedGroups[group.id] ? 'Show' : 'Hide' }}
           </button>
           <button class="btn btn-sm btn-outline-secondary" @click="startEditingGroup(group)">Edit</button>
-          <button class="btn btn-sm btn-outline-secondary" @click="printGroup(group.id)">Print</button>
+          <button class="btn btn-sm btn-outline-secondary" @click="print(`print-${group.id}`, `${group.name}`)">Print</button>
           <button class="btn btn-sm btn-danger" @click="confirmDeleteGroup(group.id)">Delete</button>
         </div>
       </div>
@@ -187,7 +187,7 @@
               {{ !collapsedTurns[turn.id] ? 'Show' : 'Hide' }}
             </button>
             <button class="btn btn-sm btn-outline-secondary" @click="startEditingTurn(turn)">Edit</button>
-            <button class="btn btn-sm btn-outline-secondary" @click="printTurn(turn.id)">Print</button>
+            <button class="btn btn-sm btn-outline-secondary" @click="print(`print-${turn.id}`, `Campaign Turn ${turn.turnNumber}`)">Print</button>
             <button class="btn btn-sm btn-danger" @click="confirmDeleteTurn(turn.id)">Delete</button>
           </div>
         </div>
@@ -443,8 +443,8 @@ function toggleGroupCollapse(groupId: string) {
   collapsedGroups.value[groupId] = !collapsedGroups.value[groupId]
 }
 
-function printCampaign() {
-  const el = document.getElementById(`campaignDescription`);
+function print(selector: string, title: string) {
+  const el = document.getElementById(`${selector}`);
   if (!el) return;
   const printContent = el.innerHTML;
   const printWindow = window.open('', '', 'height=600,width=800');
@@ -453,7 +453,7 @@ function printCampaign() {
     printWindow.document.write(`
       <html>
         <head>
-          <title>Print Campaign</title>
+          <title>Print ${title}</title>
           <link 
             href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" 
             rel="stylesheet" 
@@ -464,6 +464,7 @@ function printCampaign() {
         </head>
         <body>
           <div class="container">
+            <strong>${title}</strong>
             ${printContent}
           </div>
         </body>
@@ -475,81 +476,6 @@ function printCampaign() {
     printWindow.onload = () => {
       printWindow.focus();
       printWindow.print();
-      printWindow.close();
-    };
-  }
-}
-
-function printGroup(groupId: string) {
-  const el = document.getElementById(`print-${groupId}`);
-  if (!el) return;
-  const printContent = el.innerHTML;
-  const printWindow = window.open('', '', 'height=600,width=800');
-
-  if (printWindow) {
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Print Group</title>
-          <link 
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" 
-            rel="stylesheet" 
-            integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" 
-            crossorigin="anonymous"
-          >
-          <link rel="stylesheet" type="text/css" href="/print.css">
-        </head>
-        <body>
-          <div class="container">
-            ${printContent}
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-
-    // Wait for stylesheets to load before printing
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
-    };
-  }
-}
-
-function printTurn(turnId: string) {
-  const el = document.getElementById(`print-${turnId}`);
-  if (!el) return;
-  const printContent = el.innerHTML;
-  const printWindow = window.open('', '', 'height=600,width=800');
-
-  if (printWindow) {
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Print Campaign Turn</title>
-          <link 
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" 
-            rel="stylesheet" 
-            integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" 
-            crossorigin="anonymous"
-          >
-          <link rel="stylesheet" type="text/css" href="/print.css">
-        </head>
-        <body>
-          <div class="container">
-            ${printContent}
-          </div>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-
-    // Wait for stylesheets to load before printing
-    printWindow.onload = () => {
-      printWindow.focus();
-      printWindow.print();
-      printWindow.close();
     };
   }
 }
@@ -655,6 +581,8 @@ onMounted(async () => {
 
   loading.value = false
   groupNameLabel.value = campaign?.value ? `${groupSystemDisplayName[campaign.value.system as keyof typeof groupSystemDisplayName]}` : "Group";
+
+  document.title = `5x Companion ${campaign.value?.name}`;
 })
 </script>
 
