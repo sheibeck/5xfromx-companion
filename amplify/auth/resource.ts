@@ -32,9 +32,10 @@ export const auth = defineAuth({
         // },
         callbackUrls: [
           'https://localhost:5174/campaigns',
-          'https://main.d2e92q6lz39lb.amplifyapp.com/campaigns'
+          'https://main.d2e92q6lz39lb.amplifyapp.com/campaigns',
+          'https://www.5x-companion.com'
         ],
-        logoutUrls: ['https://localhost:5174/', 'https://main.d2e92q6lz39lb.amplifyapp.com/'],
+        logoutUrls: ['https://localhost:5174/', 'https://main.d2e92q6lz39lb.amplifyapp.com/', 'https://www.5x-companion.com/'],
       }
     }
   });
