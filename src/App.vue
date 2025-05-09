@@ -27,9 +27,21 @@
       <!-- Nav Content -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <!-- Left Nav -->
-        <ul class="navbar-nav" v-if="user">
+        <ul class="navbar-nav">
+          <li class="nav-item" v-if="user">
+            <router-link to="/campaigns" class="nav-link">
+              <i class="bi bi-map"></i> Campaigns
+            </router-link>
+          </li>
           <li class="nav-item">
-            <router-link to="/campaigns" class="nav-link">Campaigns</router-link>
+            <a class="nav-link" href="https://github.com/sheibeck/5xfromx-companion/wiki/5x-Companion" target="_blank">
+              <i class="bi bi-info-circle"></i> About
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="https://github.com/sheibeck/5xfromx-companion/issues" target="_blank">
+              <i class="bi bi-bug"></i> Bug
+            </a>
           </li>
         </ul>
 
