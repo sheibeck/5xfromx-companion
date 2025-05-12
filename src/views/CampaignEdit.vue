@@ -677,7 +677,7 @@ async function onImageUpload(event: Event, groupId: string, isEdit?: boolean) {
 }
 
 
-function resizeImage(file: File, maxSize = 200): Promise<Blob> {
+function resizeImage(file: File, maxSize = 400): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const reader = new FileReader();
@@ -778,7 +778,7 @@ onMounted(async () => {
 }
 
 .character-img-preview {
-  max-height: 100px;
+  max-height: 80px;
   width: auto;
   display: block;
   margin-bottom: 0.5rem;
