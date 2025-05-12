@@ -104,13 +104,24 @@
                   <div v-if="editingCharacterId === char.id" class="d-print-none">
                     <input v-model="editCharacter.name" class="form-control mb-2" required />
                     <textarea v-model="editCharacter.description" class="form-control" :rows="editRows"></textarea>
+                    <input type="file" accept="image/*" @change="onImageUpload($event, group.id, true)" class="form-control" />
+                    <div v-if="editCharacter.imagePath">
+                      <img :src="editCharacter.imagePath" alt="Preview" class="character-img-preview" />
+                    </div>
                     <div class="d-flex flex-wrap gap-2 mt-2">
                       <button class="btn btn-sm btn-primary" @click="updateCharacter(group.id, char.id)">Save</button>
                       <button class="btn btn-sm btn-secondary" @click="cancelEditingCharacter">Cancel</button>
                     </div>
                   </div>
                   <div v-else>
-                    <strong>{{ char.name }}</strong>
+                    <div class="row align-items-start">
+                      <div class="col">
+                        <strong>{{ char.name }}</strong>
+                      </div>
+                      <div class="col-auto" v-if="char.imagePath">
+                        <img :src="char.imagePath" alt="Character Image" class="character-img-preview img-fluid rounded" />
+                      </div>
+                    </div>
                     <div v-html="renderMarkdown(char.description || '')"></div>
                     <div class="d-flex flex-wrap gap-2 mt-2 d-print-none">
                       <button class="btn btn-sm btn-outline-secondary" @click="startEditingCharacter(char)">Edit</button>
@@ -140,13 +151,16 @@
               />
               <button class="btn btn-outline-secondary" type="button" @click="generateCharacterName(group.id)">🎲</button>
             </div>
-
             <textarea
               v-model="newCharacter[group.id].description"
               class="form-control"
               placeholder="Character description (Markdown supported)"
               :rows="editRows"
             ></textarea>
+            <input type="file" accept="image/*" @change="onImageUpload($event, group.id, false)" class="form-control" />
+            <div v-if="newCharacter[group.id].imagePath">
+              <img :src="newCharacter[group.id].imagePath" alt="Preview" class="character-img-preview" />
+            </div>
             <div class="mt-1">
               <button class="btn btn-primary btn-sm me-2" @click="createCharacter(group.id)">Add</button>
               <button class="btn btn-secondary btn-sm me-2" @click="toggleCharacterForm(group.id)">Cancel</button>
@@ -230,18 +244,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { generateClient } from 'aws-amplify/data'
-import type { Schema } from '../../amplify/data/resource'
-import { marked } from 'marked'
-import characterTemplates from '../templates/characterTemplates'
+import { ref, onMounted, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../amplify/data/resource';
+import { marked } from 'marked';
+import characterTemplates from '../templates/characterTemplates';
 import turnTemplates from '../templates/turnTemplates';
 import groupTamplates from '../templates/groupTemplates';
-import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSystemDisplayName'
+import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSystemDisplayName';
 import { uniqueNamesGenerator, type Config } from 'unique-names-generator';
 import {fantasy_names, fantasy_surnames, scifi_names, scifi_surnames, modern_names, modern_surnames} from '../templates/randomNames';
-import draggable from 'vuedraggable'
+import draggable from 'vuedraggable';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 
 const route = useRoute()
 const router = useRouter()
@@ -260,13 +275,13 @@ const editingCampaign = ref(false)
 const characterGroups = ref<Schema['CharacterGroup']['type'][]>([])
 const groupCharacters = ref<Record<string, Schema['Character']['type'][]>>({})
 const newGroup = ref({ name: '', description: '' })
-const newCharacter = ref<Record<string, { name: string; description?: string }>>({})
+const newCharacter = ref<Record<string, { name: string; description?: string, imagePath?: string }>>({})
 
 const editingGroupId = ref<string | null>(null)
 const editGroup = ref<{ name: string; description: string }>({ name: '', description: '' })
 
 const editingCharacterId = ref<string | null>(null)
-const editCharacter = ref<{ name: string; description?: string }>({ name: '', description: '' })
+const editCharacter = ref<{ name: string; description?: string; imagePath?: string }>({ name: '', description: '', imagePath: '' })
 
 const showGroupForm = ref(false)
 const showCharacterForm = ref<Record<string, boolean>>({})
@@ -370,6 +385,7 @@ async function createCharacter(groupId: string) {
     ...entry,
     characterGroupId: groupId,
     sortOrder: groupCharacters.value[groupId]?.length || 0,
+    imagePath: entry.imagePath || undefined,
   });
 
   toggleCharacterForm(groupId);
@@ -425,7 +441,7 @@ function cancelEditingCharacter() {
 }
 
 async function updateCharacter(groupId: string, characterId: string) {
-  await client.models.Character.update({ id: characterId, ...editCharacter.value })
+  await client.models.Character.update({ id: characterId, ...editCharacter.value, imagePath: editCharacter.value.imagePath || undefined })
   editingCharacterId.value = null
   editCharacter.value = { name: '', description: '' }
   groupCharacters.value[groupId] = await loadCharactersForGroup(groupId)
@@ -574,6 +590,77 @@ async function confirmDeleteTurn(turnId: string) {
   }
 }
 
+async function onImageUpload(event: Event, groupId: string, isEdit?: boolean) {
+  const input = event.target as HTMLInputElement;
+  if (!input.files || input.files.length === 0) return;
+  const file = input.files[0];
+
+  const path = `portrait/${Date.now()}-${file.name}`;
+  try {
+    const resizedBlob = await resizeImage(file);
+    await uploadData({ path, data: resizedBlob, options: { contentType: file.type } });
+    if (isEdit) {
+      editCharacter.value.imagePath = path;
+    }
+    else {
+      newCharacter.value[groupId].imagePath = path;
+    }
+    const { url } = await getUrl({ path });
+
+    if (isEdit) {
+      editCharacter.value.imagePath = url.toString();
+    } else {
+      newCharacter.value[groupId].imagePath = url.toString();
+    }
+    
+  } catch (error) {
+    console.error('Image upload failed:', error);
+  }
+}
+
+function resizeImage(file: File, maxSize = 200): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      img.src = e.target?.result as string;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > maxSize) {
+          height *= maxSize / width;
+          width = maxSize;
+        }
+      } else {
+        if (height > maxSize) {
+          width *= maxSize / height;
+          height = maxSize;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return reject(new Error('Canvas not supported'));
+
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error('Blob conversion failed'));
+      }, file.type);
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 onMounted(async () => {
   await loadCampaign()
   await loadGroupsWithCharacters()
@@ -601,5 +688,12 @@ onMounted(async () => {
   to {
     transform: rotate(360deg);
   }
+}
+
+.character-img-preview {
+  max-height: 100px;
+  width: auto;
+  display: block;
+  margin-bottom: 0.5rem;
 }
 </style>
