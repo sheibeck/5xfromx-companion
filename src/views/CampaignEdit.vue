@@ -479,9 +479,14 @@ function cancelEditingCharacter() {
 async function updateCharacter(groupId: string, characterId: string) {
   const existingChar = groupCharacters.value[groupId]?.find(c => c.id === characterId);
   const oldImagePath = existingChar?.imagePath;
-  const newImagePath = editCharacter.value.imagePath;
+  let newImagePath = editCharacter.value.imagePath;
 
-  const newUrl = await getUrlToPortrait(newImagePath);
+  // If no new image provided, keep the old one
+  if (!newImagePath && oldImagePath) {
+    newImagePath = oldImagePath;
+  }
+
+  const newUrl = newImagePath ? await getUrlToPortrait(newImagePath) : '';
 
   await client.models.Character.update({
     id: characterId,
@@ -490,7 +495,8 @@ async function updateCharacter(groupId: string, characterId: string) {
     imageUrl: newUrl || undefined,
   });
 
-  if (oldImagePath && oldImagePath !== newImagePath) {
+  // Remove old image only if a new image was set and it's different
+  if (oldImagePath && newImagePath && oldImagePath !== newImagePath) {
     try {
       await remove({ path: oldImagePath });
     } catch (e) {
