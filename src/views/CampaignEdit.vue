@@ -105,9 +105,6 @@
                     <input v-model="editCharacter.name" class="form-control mb-2" required />
                     <textarea v-model="editCharacter.description" class="form-control" :rows="editRows"></textarea>
                     <input type="file" accept="image/*" @change="onImageUpload($event, group.id, true)" class="form-control" />
-                    <div v-if="editCharacter.imagePath">
-                      <img :src="editCharacter.imagePath" alt="Preview" class="character-img-preview" />
-                    </div>
                     <div class="d-flex flex-wrap gap-2 mt-2">
                       <button class="btn btn-sm btn-primary" @click="updateCharacter(group.id, char.id)">Save</button>
                       <button class="btn btn-sm btn-secondary" @click="cancelEditingCharacter">Cancel</button>
@@ -118,8 +115,8 @@
                       <div class="col">
                         <strong>{{ char.name }}</strong>
                       </div>
-                      <div class="col-auto" v-if="char.imagePath">
-                        <img :src="char.imagePath" alt="Character Image" class="character-img-preview img-fluid rounded" />
+                      <div class="col-auto" v-if="char.imageUrl">
+                        <img :src="char.imageUrl" alt="Character Image" class="character-img-preview img-fluid rounded" />
                       </div>
                     </div>
                     <div v-html="renderMarkdown(char.description || '')"></div>
@@ -158,9 +155,6 @@
               :rows="editRows"
             ></textarea>
             <input type="file" accept="image/*" @change="onImageUpload($event, group.id, false)" class="form-control" />
-            <div v-if="newCharacter[group.id].imagePath">
-              <img :src="newCharacter[group.id].imagePath" alt="Preview" class="character-img-preview" />
-            </div>
             <div class="mt-1">
               <button class="btn btn-primary btn-sm me-2" @click="createCharacter(group.id)">Add</button>
               <button class="btn btn-secondary btn-sm me-2" @click="toggleCharacterForm(group.id)">Cancel</button>
@@ -244,7 +238,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { getCurrentUser } from '@aws-amplify/auth';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
@@ -256,7 +251,7 @@ import { gameSystemDisplayName, groupSystemDisplayName} from '../enums/gameSyste
 import { uniqueNamesGenerator, type Config } from 'unique-names-generator';
 import {fantasy_names, fantasy_surnames, scifi_names, scifi_surnames, modern_names, modern_surnames} from '../templates/randomNames';
 import draggable from 'vuedraggable';
-import { uploadData, getUrl } from 'aws-amplify/storage';
+import { uploadData, getUrl, remove } from 'aws-amplify/storage';
 
 const route = useRoute()
 const router = useRouter()
@@ -275,13 +270,13 @@ const editingCampaign = ref(false)
 const characterGroups = ref<Schema['CharacterGroup']['type'][]>([])
 const groupCharacters = ref<Record<string, Schema['Character']['type'][]>>({})
 const newGroup = ref({ name: '', description: '' })
-const newCharacter = ref<Record<string, { name: string; description?: string, imagePath?: string }>>({})
+const newCharacter = ref<Record<string, { name: string; description?: string, imagePath?: string, imageUrl?: string }>>({})
 
 const editingGroupId = ref<string | null>(null)
 const editGroup = ref<{ name: string; description: string }>({ name: '', description: '' })
 
 const editingCharacterId = ref<string | null>(null)
-const editCharacter = ref<{ name: string; description?: string; imagePath?: string }>({ name: '', description: '', imagePath: '' })
+const editCharacter = ref<{ name: string; description?: string; imagePath?: string; imageUrl?: string }>({ name: '', description: '', imagePath: '', imageUrl: '' })
 
 const showGroupForm = ref(false)
 const showCharacterForm = ref<Record<string, boolean>>({})
@@ -338,8 +333,21 @@ async function loadCampaign() {
 }
 
 async function loadCharactersForGroup(groupId: string) {
-  const { data } = await client.models.Character.list({ filter: { characterGroupId: { eq: groupId } } })
-  return data.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const { data } = await client.models.Character.list({ filter: { characterGroupId: { eq: groupId } } });
+  const characters = data.slice().sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+  for (const character of characters) {
+    if (character.imagePath) {
+      try {
+        const url = await getUrlToPortrait(character.imagePath);
+        character.imageUrl = url ?? "";
+      } catch (e) {
+        console.warn(`Failed to load image for ${character.name}`, e);
+      }
+    }
+  }
+
+  return characters;
 }
 
 async function loadGroupsWithCharacters() {
@@ -411,19 +419,47 @@ async function deleteConfirmed() {
 
   if (type === 'group') {
     const characters = groupCharacters.value[groupId] || []
-    for (const char of characters) await client.models.Character.delete({ id: char.id })
-    await client.models.CharacterGroup.delete({ id: groupId })
-  } else if (type === 'character') {
-    await client.models.Character.delete({ id: characterId })
-  } else if (type === 'campaign' && campaign.value?.id) {
-    const groupList = await client.models.CharacterGroup.list({ filter: { campaignId: { eq: campaign.value.id } } })
-    for (const group of groupList.data) {
-      const chars = await client.models.Character.list({ filter: { characterGroupId: { eq: group.id } } })
-      for (const c of chars.data) await client.models.Character.delete({ id: c.id })
-      await client.models.CharacterGroup.delete({ id: group.id })
+    for (const char of characters) {
+      if (char.imagePath) {
+        try {
+          await remove({ 
+            path: char.imagePath,
+          });
+        } catch (e) {
+          console.warn('Failed to delete image:', e);
+        }
+      }
+      await client.models.Character.delete({ id: char.id });
     }
-    await client.models.Campaign.delete({ id: campaign.value.id })
-    router.push('/campaigns')
+    await client.models.CharacterGroup.delete({ id: groupId });
+  } else if (type === 'character') {
+    const char = groupCharacters.value[groupId]?.find(c => c.id === characterId);
+    if (char?.imagePath) {
+      try {
+        await remove({ path: char.imagePath });
+      } catch (e) {
+        console.warn('Failed to delete image:', e);
+      }
+    }
+    await client.models.Character.delete({ id: characterId });
+  } else if (type === 'campaign' && campaign.value?.id) {
+    const groupList = await client.models.CharacterGroup.list({ filter: { campaignId: { eq: campaign.value.id } } });
+    for (const group of groupList.data) {
+      const chars = await client.models.Character.list({ filter: { characterGroupId: { eq: group.id } } });
+      for (const c of chars.data) {
+        if (c.imagePath) {
+          try {
+            await remove({ path: c.imagePath });
+          } catch (e) {
+            console.warn('Failed to delete image:', e);
+          }
+        }
+        await client.models.Character.delete({ id: c.id });
+      }
+      await client.models.CharacterGroup.delete({ id: group.id });
+    }
+    await client.models.Campaign.delete({ id: campaign.value.id });
+    router.push('/campaigns');
   }
 
   modal.value.visible = false
@@ -441,10 +477,30 @@ function cancelEditingCharacter() {
 }
 
 async function updateCharacter(groupId: string, characterId: string) {
-  await client.models.Character.update({ id: characterId, ...editCharacter.value, imagePath: editCharacter.value.imagePath || undefined })
-  editingCharacterId.value = null
-  editCharacter.value = { name: '', description: '' }
-  groupCharacters.value[groupId] = await loadCharactersForGroup(groupId)
+  const existingChar = groupCharacters.value[groupId]?.find(c => c.id === characterId);
+  const oldImagePath = existingChar?.imagePath;
+  const newImagePath = editCharacter.value.imagePath;
+
+  const newUrl = await getUrlToPortrait(newImagePath);
+
+  await client.models.Character.update({
+    id: characterId,
+    ...editCharacter.value,
+    imagePath: newImagePath || undefined,
+    imageUrl: newUrl || undefined,
+  });
+
+  if (oldImagePath && oldImagePath !== newImagePath) {
+    try {
+      await remove({ path: oldImagePath });
+    } catch (e) {
+      console.warn('Failed to remove old image:', e);
+    }
+  }
+
+  editingCharacterId.value = null;
+  editCharacter.value = { name: '', description: '' };
+  groupCharacters.value[groupId] = await loadCharactersForGroup(groupId);
 }
 
 function toggleCampaignDescription() {
@@ -595,28 +651,25 @@ async function onImageUpload(event: Event, groupId: string, isEdit?: boolean) {
   if (!input.files || input.files.length === 0) return;
   const file = input.files[0];
 
-  const path = `portrait/${Date.now()}-${file.name}`;
+  const path = `portrait/${user.value}/${Date.now()}-${file.name}`;
   try {
     const resizedBlob = await resizeImage(file);
-    await uploadData({ path, data: resizedBlob, options: { contentType: file.type } });
-    if (isEdit) {
-      editCharacter.value.imagePath = path;
-    }
-    else {
-      newCharacter.value[groupId].imagePath = path;
-    }
-    const { url } = await getUrl({ path });
+    await uploadData({
+      path: path,
+      data: resizedBlob,
+      options: { contentType: file.type },
+    });
 
     if (isEdit) {
-      editCharacter.value.imagePath = url.toString();
+      editCharacter.value.imagePath = path;
     } else {
-      newCharacter.value[groupId].imagePath = url.toString();
+      newCharacter.value[groupId].imagePath = path;
     }
-    
   } catch (error) {
     console.error('Image upload failed:', error);
   }
 }
+
 
 function resizeImage(file: File, maxSize = 200): Promise<Blob> {
   return new Promise((resolve, reject) => {
@@ -661,7 +714,35 @@ function resizeImage(file: File, maxSize = 200): Promise<Blob> {
   });
 }
 
+async function getUrlToPortrait(path: string | undefined): Promise<string|undefined> {
+  try {
+    if (!path) {
+      return undefined
+    }
+
+    const linkToStorageFile = await getUrl({
+      path: path,
+    });
+    return linkToStorageFile.url.toString();
+  } catch (error) {
+    console.error('Failed to get portrait URL:', error);
+    return '';
+  }
+}
+
+const user = ref();
+async function getUserAuth() {
+  try {
+    const { userId } = await getCurrentUser();
+    user.value = userId;
+  }
+  catch {
+    user.value = null;
+  }
+}
+
 onMounted(async () => {
+  await getUserAuth();
   await loadCampaign()
   await loadGroupsWithCharacters()
   await loadTurns();

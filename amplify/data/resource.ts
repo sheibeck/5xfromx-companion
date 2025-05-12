@@ -35,6 +35,7 @@ const schema =  a.schema({
       characterGroup: a.belongsTo('CharacterGroup', 'characterGroupId'),
       sortOrder: a.integer(),
       imagePath: a.string(),
+      imageUrl: a.string(),
     })
 })
 .authorization(allow => [
