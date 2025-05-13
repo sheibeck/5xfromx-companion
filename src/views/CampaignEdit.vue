@@ -239,7 +239,7 @@
 
 <script setup lang="ts">
 import { getCurrentUser } from '@aws-amplify/auth';
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../../amplify/data/resource';
