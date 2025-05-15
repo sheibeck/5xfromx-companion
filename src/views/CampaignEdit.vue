@@ -89,7 +89,6 @@
         </div>
 
         <!-- Characters -->
-        <h3 class="d-print-none">Characters</h3>
         <div class="row">
           <draggable
             :list="groupCharacters[group.id]"
